@@ -2,11 +2,11 @@ using ExtEditor.UberMaterialPropertyDrawer.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class BeginToggleGroupDrawer : MaterialPropertyDrawer
+public class BeginGroupDrawer : MaterialPropertyDrawer
 {
     private UberDrawer _parentUberDrawer = null;
     private readonly string _groupName = "";
-    public BeginToggleGroupDrawer(string groupName, UberDrawer parent)
+    public BeginGroupDrawer(string groupName, UberDrawer parent)
     {
         this._groupName = groupName;
         this._parentUberDrawer = parent;
@@ -37,15 +37,15 @@ public class BeginToggleGroupDrawer : MaterialPropertyDrawer
         var interactiveRect = new Rect(bgRect.x + 20, bgRect.y, bgRect.width, bgRect.height);
         var e = Event.current;
         // var toggleRect = new Rect(rect.x + 4f, rect.y + 2f, 13f, 13f);
-        // if (e.type == EventType.Repaint) {
-        //     // EditorStyles.foldout.Draw(toggleRect, false, false, expanded, false);
-        // }
+        if (e.type == EventType.Repaint) {
+            EditorStyles.foldout.Draw(new Rect(position.x+2, position.y, 18, 18), false, false, expanded, false);
+        }
         if (e.type == EventType.MouseDown && interactiveRect.Contains(e.mousePosition)) {
             expanded = !expanded;
             e.Use();
         }
             
-        prop.floatValue = EditorGUI.Toggle(new Rect(position.x+2, position.y+1, 18, 18), prop.floatValue == 1.0) ? 1 : 0;
+        // prop.floatValue = EditorGUI.Toggle(new Rect(position.x+2, position.y+1, 18, 18), prop.floatValue == 1.0) ? 1 : 0;
         EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), this._groupName, EditorStyles.boldLabel);
         EditorGUI.indentLevel++;
 

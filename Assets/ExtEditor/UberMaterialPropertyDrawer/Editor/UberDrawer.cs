@@ -29,6 +29,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
                 this._propertyDrawer = new BeginToggleGroupDrawer(groupName, this);
             else if (drawer == "EndToggleGroup")
                 this._propertyDrawer = new EndToggleGroupDrawer(groupName, this);
+            else if (drawer == "BeginGroup")
+                this._propertyDrawer = new BeginGroupDrawer(groupName, this);
         }
 
         public UberDrawer(string groupName, string drawer, string arg0)
@@ -41,28 +43,19 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             // var debugStr = MakeDebugArgString(prop.name);
-            // Debug.Log(debugStr);
             if(_propertyDrawer != null)
                 _propertyDrawer.OnGUI(position, prop,label,editor);
             else
             {
                 // editor.TexturePropertySingleLine(label, prop);
-                // Debug.Log(debugStr);
-                // EditorGUI.LabelField(position, debugStr, EditorStyles.label);
                 if (GroupExpanded.TryGetValue(_groupName, out var expanded))
                 {
                     if (expanded)
-                    {
-                        // EditorGUI.indentLevel++;
-                        // EditorGUI.LabelField(position, debugStr, EditorStyles.label);
                         editor.DefaultShaderProperty(prop, ObjectNames.NicifyVariableName(prop.name));
-                        // EditorGUI.indentLevel--;
-                    }
                 }
                 else
                 {
                     //対応するグループが見つからない場合
-                    // EditorGUI.LabelField(position, debugStr, EditorStyles.label);
                     editor.DefaultShaderProperty(prop, ObjectNames.NicifyVariableName(prop.name));
                 }   
             }
@@ -70,13 +63,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            var baseValue = 0;//base.GetPropertyHeight(prop, label, editor);
-            if (_drawer == "EndToggleGroup") return _propertyDrawer.GetPropertyHeight(prop, label, editor);
-            if (_drawer == "BeginToggleGroup") return _propertyDrawer.GetPropertyHeight(prop, label, editor);
+            if (_propertyDrawer != null) return _propertyDrawer.GetPropertyHeight(prop, label, editor);
+            
+            const int baseValue = 0; //base.GetPropertyHeight(prop, label, editor);
             if (GroupExpanded.TryGetValue(_groupName, out var expanded))
-            {
                 return expanded ? baseValue : 0;
-            }
+            
             return baseValue;//この場合別の処理をしても良いかも
         }
 
