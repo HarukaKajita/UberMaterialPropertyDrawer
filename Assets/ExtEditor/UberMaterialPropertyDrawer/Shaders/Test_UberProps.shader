@@ -12,8 +12,20 @@ Shader "Test/UberProps"
         _SomeFeatureMap ("_SomeFeatureMap", 2D) = "white" {}
         [Uber(TestGroup, GroupName)]
         _SomeFeatureWidth ("_SomeFeatureWidth", float) = 0
+        [Uber(NestGroup, BeginGroup)]
+        _UseNestFeature ("_UseNestFeature", int) = 0
+        [Uber(NestGroup)]
+        _NestFeatureColor ("_NestFeatureColor", color) = (0.2,0.7,0.8)
+        [Uber(GrandChild, BeginGroup)]
+        _BeginGroundChild ("_BeginGroundChild", int) = 0
+        [Uber(GrandChild)]
+        _GrandChildVector ("_GrandChildVector", vector) = (0,0,0,0)
+        [Uber(GrandChild, EndToggleGroup)]
+        _EndGroundChild ("_EndGroundChild", int) = 0
+        [Uber(NestGroup, EndToggleGroup)]
+        _EndNestGroup ("_EndNestGroup", int) = 0
         [Uber(TestGroup, EndToggleGroup)]
-        _EndSomGroup ("_UseSomeFeature", int) = 0
+        _EndSomGroup ("_EndSomGroup", int) = 0
         
         [Uber(None, ARG0)]
         _UberTest0 ("_UberTestNone", range(0,1)) = 0

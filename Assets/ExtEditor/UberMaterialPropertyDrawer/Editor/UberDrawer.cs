@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
         private readonly string _groupName = null;
         private readonly string _drawer = null;
         private readonly string _arg0 = null;
-        private static readonly Dictionary<string, bool> GroupExpanded = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> GroupExpanded = new();
+        private static readonly Stack<string> GroupNest = new();
         private readonly MaterialPropertyDrawer _propertyDrawer;
         public UberDrawer() { }
 
@@ -25,12 +27,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             this._groupName = groupName;
             this._drawer = drawer;
             this._propertyDrawer = null;
+            var success = GroupNest.TryPeek(out var parentGroup);
+            parentGroup = success ? parentGroup : "";
             if (drawer == "BeginToggleGroup")
-                this._propertyDrawer = new BeginToggleGroupDrawer(groupName, this);
+                this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
             else if (drawer == "EndToggleGroup")
-                this._propertyDrawer = new EndToggleGroupDrawer(groupName, this);
+                this._propertyDrawer = new EndToggleGroupDrawer(groupName, GroupStr());
             else if (drawer == "BeginGroup")
-                this._propertyDrawer = new BeginGroupDrawer(groupName, this);
+                this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
         }
 
         public UberDrawer(string groupName, string drawer, string arg0)
@@ -88,14 +92,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
         {
             if (GroupExpanded.TryGetValue(groupName, out var expanded))
             {
-                Debug.Log("GetGroupExpanded : Existed " + groupName + " : " + expanded);
+                // Debug.Log("GetGroupExpanded : Existed " + groupName + " : " + expanded);
                 return expanded;
             }
             else
             {
                 var defaultValue = false;
                 GroupExpanded.Add(groupName, defaultValue);
-                Debug.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + defaultValue);
+                // Debug.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + defaultValue);
                 return defaultValue;
             }
         }
@@ -103,6 +107,43 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
         internal static void SetGroupExpanded(string groupName, bool state)
         {
             GroupExpanded[groupName] = state;
+        }
+
+        public static void PushGroup(string groupName)
+        {
+            Debug.Log("Push : " + groupName);
+            GroupNest.Push(groupName);
+        }
+        internal static string PopGroup()
+        {
+            var popGroup = GroupNest.Pop();
+            Debug.Log("Pop  : " + popGroup);
+            return popGroup;
+        }
+
+        internal static int GetGroupIntentLevel()
+        {
+            return GroupNest.Count;
+        }
+
+        internal static string GroupStr()
+        {
+            return string.Join(", ", GroupNest);
+        }
+        internal static bool ParentGroupIsFolded(int indentNum)
+        {
+            Debug.Log("indentNum : " + indentNum);
+            Debug.Log("GroupNest : " + GroupNest.Count);
+            var groupArray = GroupNest.Reverse().ToArray();
+            if (GroupNest.Count < indentNum) return false;
+            Debug.Log("Parents : " + string.Join(", ", groupArray));
+            for (var i = 0; i < indentNum; i++)
+            {
+                var parentalGroup = groupArray[i];
+                Debug.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "expanded" : "folded"));
+                if (!GetGroupExpanded(parentalGroup)) return true;
+            }
+            return false;
         }
     }
 }

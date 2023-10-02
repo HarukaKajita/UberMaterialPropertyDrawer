@@ -4,22 +4,25 @@ using UnityEngine;
 
 public class EndToggleGroupDrawer : MaterialPropertyDrawer
 {
-    private UberDrawer _parentUberDrawer = null;
     private readonly string _groupName = "";
-    public EndToggleGroupDrawer(string groupName, UberDrawer parent)
+    private readonly int _indentNum = 0;
+    private readonly string _memo;
+    public EndToggleGroupDrawer(string groupName, string memo = "")
     {
         this._groupName = groupName;
-        this._parentUberDrawer = parent;
+        this._memo = memo;
+        this._indentNum = Mathf.Max(0,UberDrawer.GetGroupIntentLevel()-1);
+        var popGroup = UberDrawer.PopGroup();
+        if (groupName != popGroup) Debug.LogError("Not Corresponded Group Begin-End : " + popGroup + " - " + groupName);
     }
 
     public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
     {
-        // return base.GetPropertyHeight(prop, label, editor);
         return 0;
     }
 
     public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
-    {
+    { 
         EndPanel();
     }
 
