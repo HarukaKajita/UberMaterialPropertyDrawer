@@ -31,8 +31,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             parentGroup = success ? parentGroup : "";
             if (drawer == "BeginToggleGroup")
                 this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
-            else if (drawer == "EndToggleGroup")
-                this._propertyDrawer = new EndToggleGroupDrawer(groupName, GroupStr());
+            else if (drawer == "EndGroup")
+                this._propertyDrawer = new EndGroupDrawer(groupName, GroupStr());
             else if (drawer == "BeginGroup")
                 this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
         }

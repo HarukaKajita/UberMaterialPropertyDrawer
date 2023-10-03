@@ -2,12 +2,12 @@ using ExtEditor.UberMaterialPropertyDrawer.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class EndToggleGroupDrawer : MaterialPropertyDrawer
+public class EndGroupDrawer : MaterialPropertyDrawer
 {
     private readonly string _groupName = "";
     private readonly int _indentNum = 0;
     private readonly string _memo;
-    public EndToggleGroupDrawer(string groupName, string memo = "")
+    public EndGroupDrawer(string groupName, string memo = "")
     {
         this._groupName = groupName;
         this._memo = memo;
