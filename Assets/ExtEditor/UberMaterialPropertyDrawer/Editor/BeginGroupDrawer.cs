@@ -8,11 +8,11 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
     private readonly int _indentNum = 0;
     private readonly string _parentGroup = "";
     private readonly string _memo;
-    public BeginGroupDrawer(string groupName, string memo = "")
+    public BeginGroupDrawer(string groupName, string parentGroupName = "")
     {
         this._groupName = groupName;
+        this._parentGroup = parentGroupName;
         this._indentNum = UberDrawer.GetGroupIntentLevel();
-        this._parentGroup = memo;
         UberDrawer.PushGroup(groupName);
     }
 
@@ -20,12 +20,10 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
     {
         if (string.IsNullOrEmpty(_parentGroup)) return false;
         return !UberDrawer.GetGroupExpanded(_parentGroup);
-        return UberDrawer.ParentGroupIsFolded(_indentNum);
     }
     public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
     {
         Debug.Log("GetPropertyHeight Begin : " + _groupName);
-        // return base.GetPropertyHeight(prop, label, editor);
         if (ParentIsFolded()) return 0;
         return 22 + 2;//調整した方が良いかも？
     }
