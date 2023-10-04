@@ -72,7 +72,7 @@ Shader "Test/UberProps"
 		[Uber(EnvironmentReflection)] _ReflectFaceColor	("Reflection Color", Color) = (0,0,0,1)
 		[Uber(EnvironmentReflection)] _ReflectOutlineColor("Reflection Color", Color) = (0,0,0,1)
 		[Uber(EnvironmentReflection)] [NoScaleOffset]_Cube 				("Reflection Cubemap", Cube) = "black" { /* TexGen CubeReflect */ }
-		[Uber(EnvironmentReflection)] _EnvMatrixRotation	("Texture Rotation", vector) = (0, 0, 0, 0)
+		[Uber(EnvironmentReflection, Vector3)] _EnvMatrixRotation	("Texture Rotation", vector) = (0, 0, 0, 0)
     	[Uber(EnvironmentReflection, EndGroup)] _EndEnvironmentReflectionDummy ("_EndEnvironmentReflectionDummy", int) = 0
 		
     	[Uber(Lighting, EndGroup)] _EndLightingDummy ("_EndLightingDummy", int) = 0

@@ -37,6 +37,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
                 this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
             else if (drawer == "Vector2")
                 this._propertyDrawer = new Vector2Drawer(groupName);
+            else if (drawer == "Vector3")
+                this._propertyDrawer = new Vector3Drawer(groupName);
         }
 
         public UberDrawer(string groupName, string drawer, string arg0)
@@ -53,6 +55,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
                 _propertyDrawer.OnGUI(position, prop,label,editor);
             else
             {
+                
                 // editor.TexturePropertySingleLine(label, prop);
                 if (GroupExpanded.TryGetValue(_groupName, out var expanded))
                 {
@@ -64,6 +67,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
                     //対応するグループが見つからない場合
                     editor.DefaultShaderProperty(prop, ObjectNames.NicifyVariableName(prop.name));
                 }   
+                
             }
         }
 

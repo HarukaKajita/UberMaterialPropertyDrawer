@@ -1,12 +1,13 @@
+
 using ExtEditor.UberMaterialPropertyDrawer.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class Vector2Drawer : MaterialPropertyDrawer
+public class Vector3Drawer : MaterialPropertyDrawer
 {
     private readonly string _groupName = "";
     
-    public Vector2Drawer(string groupName)
+    public Vector3Drawer(string groupName)
     {
         this._groupName = groupName;
     }
@@ -37,12 +38,10 @@ public class Vector2Drawer : MaterialPropertyDrawer
             // EditorGUI.DrawRect(labelRect, Color.red);
             // EditorGUI.DrawRect(valueRect, Color.blue);
             EditorGUI.LabelField(labelRect, propName);
-            prop.vectorValue = EditorGUI.Vector2Field(valueRect, GUIContent.none, prop.vectorValue);
+            prop.vectorValue = EditorGUI.Vector3Field(valueRect, GUIContent.none, prop.vectorValue);
             EditorGUIUtility.labelWidth = tmp_labelWidth;
             EditorGUIUtility.fieldWidth = tmp_fieldWidth;
             EditorGUIUtility.wideMode = false;
-            
-
         }
     }
 }
