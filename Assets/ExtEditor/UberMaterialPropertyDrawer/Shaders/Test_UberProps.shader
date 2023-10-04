@@ -87,39 +87,41 @@ Shader "Test/UberProps"
 		[Uber(Glow)]	_GlowPower			("Falloff", Range(1, 0)) = 0.75
     	[Uber(Glow, EndGroup)] _EndGlowDummy ("_EndGlowDummy", int) = 0
 
-		_WeightNormal		("Weight Normal", float) = 0
-		_WeightBold			("Weight Bold", float) = 0.5
+    	[Uber(Debug Setting, BeginGroup)] _BeginDebugSettingDummy ("_BeginDebugSettingDummy", int) = 0
+		[Uber(Debug Setting)]	_WeightNormal		("Weight Normal", float) = 0
+		[Uber(Debug Setting)]	_WeightBold			("Weight Bold", float) = 0.5
 
-		_MainTex			("Font Atlas", 2D) = "white" {}
-		_TextureWidth		("Texture Width", float) = 512
-		_TextureHeight		("Texture Height", float) = 512
-		_GradientScale		("Gradient Scale", float) = 5.0
-		_ScaleX				("Scale X", float) = 1.0
-		_ScaleY				("Scale Y", float) = 1.0
+		[Uber(Debug Setting)]	_MainTex			("Font Atlas", 2D) = "white" {}
+		[Uber(Debug Setting)]	_TextureWidth		("Texture Width", float) = 512
+		[Uber(Debug Setting)]	_TextureHeight		("Texture Height", float) = 512
+		[Uber(Debug Setting)]	_GradientScale		("Gradient Scale", float) = 5.0
+		[Uber(Debug Setting)]	_ScaleX				("Scale X", float) = 1.0
+		[Uber(Debug Setting)]	_ScaleY				("Scale Y", float) = 1.0
 		
-		_Sharpness			("Sharpness", Range(-1,1)) = 0
-    	_PerspectiveFilter	("Perspective Correction", Range(0, 1)) = 0.875
+		[Uber(Debug Setting)]	_Sharpness			("Sharpness", Range(-1,1)) = 0
+    	[Uber(Debug Setting)]	_PerspectiveFilter	("Perspective Correction", Range(0, 1)) = 0.875
 
-		_VertexOffsetX		("Vertex OffsetX", float) = 0
-		_VertexOffsetY		("Vertex OffsetY", float) = 0
+		[Uber(Debug Setting)]	_VertexOffsetX		("Vertex OffsetX", float) = 0
+		[Uber(Debug Setting)]	_VertexOffsetY		("Vertex OffsetY", float) = 0
 
-		_MaskCoord			("Mask Coordinates", vector) = (0, 0, 32767, 32767)
-		_ClipRect			("Clip Rect", vector) = (-32767, -32767, 32767, 32767)
-		_MaskSoftnessX		("Mask SoftnessX", float) = 0
-		_MaskSoftnessY		("Mask SoftnessY", float) = 0
+		[Uber(Debug Setting)]	_MaskCoord			("Mask Coordinates", vector) = (0, 0, 32767, 32767)
+		[Uber(Debug Setting)]	_ClipRect			("Clip Rect", vector) = (-32767, -32767, 32767, 32767)
+		[Uber(Debug Setting)]	_MaskSoftnessX		("Mask SoftnessX", float) = 0
+		[Uber(Debug Setting)]	_MaskSoftnessY		("Mask SoftnessY", float) = 0
 
-		_StencilComp		("Stencil Comparison", Float) = 8
-		_Stencil			("Stencil ID", Float) = 0
-		_StencilOp			("Stencil Operation", Float) = 0
-		_StencilWriteMask	("Stencil Write Mask", Float) = 255
-		_StencilReadMask	("Stencil Read Mask", Float) = 255
+		[Uber(Debug Setting)]	_StencilComp		("Stencil Comparison", Float) = 8
+		[Uber(Debug Setting)]	_Stencil			("Stencil ID", Float) = 0
+		[Uber(Debug Setting)]	_StencilOp			("Stencil Operation", Float) = 0
+		[Uber(Debug Setting)]	_StencilWriteMask	("Stencil Write Mask", Float) = 255
+		[Uber(Debug Setting)]	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
-		_CullMode			("Cull Mode", Float) = 0
-		_ColorMask			("Color Mask", Float) = 15
+		[Uber(Debug Setting)]	_CullMode			("Cull Mode", Float) = 0
+		[Uber(Debug Setting)]	_ColorMask			("Color Mask", Float) = 15
     	
-    	_ScaleRatioA		("Scale RatioA", float) = 1
-		_ScaleRatioB		("Scale RatioB", float) = 1
-		_ScaleRatioC		("Scale RatioC", float) = 1
+    	[Uber(Debug Setting)]	_ScaleRatioA		("Scale RatioA", float) = 1
+		[Uber(Debug Setting)]	_ScaleRatioB		("Scale RatioB", float) = 1
+		[Uber(Debug Setting)]	_ScaleRatioC		("Scale RatioC", float) = 1
+    	[Uber(Debug Setting, EndGroup)] _EndDebugSettingDummy ("_EndDebugSettingDummy", int) = 0
     }
     SubShader
     {
