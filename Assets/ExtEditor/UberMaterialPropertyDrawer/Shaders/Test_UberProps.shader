@@ -115,7 +115,7 @@ Shader "Test/UberProps"
 		[Uber(Debug Setting)]	_StencilWriteMask	("Stencil Write Mask", Float) = 255
 		[Uber(Debug Setting)]	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
-		[Uber(Debug Setting)]	_CullMode			("Cull Mode", Float) = 0
+		[Uber(Debug Setting, Enum, UnityEngine.Rendering.CullMode)]	_CullMode			("Cull Mode", Float) = 0
 		[Uber(Debug Setting)]	_ColorMask			("Color Mask", Float) = 15
     	
     	[Uber(Debug Setting)]	_ScaleRatioA		("Scale RatioA", float) = 1

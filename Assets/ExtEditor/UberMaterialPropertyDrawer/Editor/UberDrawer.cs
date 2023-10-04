@@ -29,16 +29,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             this._propertyDrawer = null;
             var success = GroupNest.TryPeek(out var parentGroup);
             parentGroup = success ? parentGroup : "";
-            if (drawer == "BeginToggleGroup")
-                this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
-            else if (drawer == "EndGroup")
-                this._propertyDrawer = new EndGroupDrawer(groupName, GroupStr());
-            else if (drawer == "BeginGroup")
-                this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
-            else if (drawer == "Vector2")
-                this._propertyDrawer = new Vector2Drawer(groupName);
-            else if (drawer == "Vector3")
-                this._propertyDrawer = new Vector3Drawer(groupName);
+            if (drawer == "BeginToggleGroup") this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
+            else if (drawer == "EndGroup")    this._propertyDrawer = new EndGroupDrawer(groupName, GroupStr());
+            else if (drawer == "BeginGroup")  this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
+            else if (drawer == "Vector2")     this._propertyDrawer = new Vector2Drawer(groupName);
+            else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
+            
         }
 
         public UberDrawer(string groupName, string drawer, string arg0)
@@ -46,6 +42,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             this._groupName = groupName;
             this._drawer = drawer;
             this._arg0 = arg0;
+            this._propertyDrawer = null;
+            if (drawer == "Enum") this._propertyDrawer = new EnumDrawer(groupName, arg0);
+        }
+        
+        public UberDrawer(string groupName, string drawer, string[] enumNames, float[] vals)
+        {
+            this._groupName = groupName;
+            this._drawer = drawer;
+            if (drawer == "Enum") this._propertyDrawer = new EnumDrawer(groupName, enumNames, vals);
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
