@@ -18,7 +18,7 @@ public class EndGroupDrawer : MaterialPropertyDrawer
 
     public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
     {
-        return 0;
+        return -2;
     }
 
     public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

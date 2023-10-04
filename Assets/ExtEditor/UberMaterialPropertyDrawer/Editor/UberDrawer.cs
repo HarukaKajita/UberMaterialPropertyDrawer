@@ -73,7 +73,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             
             const int baseValue = 0; //base.GetPropertyHeight(prop, label, editor);
             if (GroupExpanded.TryGetValue(_groupName, out var expanded))
-                return expanded ? baseValue : 0;
+                return expanded ? baseValue : -2;
             
             return baseValue;//この場合別の処理をしても良いかも
         }

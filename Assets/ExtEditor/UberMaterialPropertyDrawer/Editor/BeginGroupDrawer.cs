@@ -7,7 +7,7 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
     private readonly string _groupName = "";
     private readonly int _indentNum = 0;
     private readonly string _parentGroup = "";
-    private readonly string _memo;
+    private string _memo;
     public BeginGroupDrawer(string groupName, string parentGroupName = "")
     {
         this._groupName = groupName;
@@ -24,7 +24,7 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
     public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
     {
         Debug.Log("GetPropertyHeight Begin : " + _groupName);
-        if (ParentIsFolded()) return 0;
+        if (ParentIsFolded()) return -2;
         return 22 + 2;//調整した方が良いかも？
     }
 
@@ -43,12 +43,14 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
         style.border = new RectOffset(7, 7, 4, 4);//背景の淵が何故か変わる
         style.fixedHeight = 22;//背景の高さ
         position.y += 6;
-        var indentOffset = 15 * _indentNum;
+        const int indentSize = 15;
+        var indentOffset = indentSize * _indentNum;
         var bgRect = new Rect(position.x+indentOffset, position.y, position.width-indentOffset, style.fixedHeight);
         GUI.Box(bgRect, "", style);//背景
         var interactiveRect = new Rect(bgRect.x, bgRect.y, bgRect.width, bgRect.height);
         var e = Event.current;
         // var toggleRect = new Rect(rect.x + 4f, rect.y + 2f, 13f, 13f);
+        var x0 = position.x+2+indentOffset;
         if (e.type == EventType.Repaint) {
             EditorStyles.foldout.Draw(new Rect(position.x+2+indentOffset, position.y, 18, 18), false, false, expanded, false);
         }
@@ -56,9 +58,14 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
             expanded = !expanded;
             e.Use();
         }
-            
+            //position.xが更新されている？っっぽい。
         // prop.floatValue = EditorGUI.Toggle(new Rect(position.x+2, position.y+1, 18, 18), prop.floatValue == 1.0) ? 1 : 0;
-        EditorGUI.LabelField(new Rect(position.x + indentOffset, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
+        var x1 = position.x+18;
+        _memo = _indentNum.ToString() + "position.x=" + x0 +"->"+x1;
+        EditorGUI.LabelField(
+            new Rect(position.x+18, position.y, 300, 18),
+            this._groupName + ":" + _memo,
+            EditorStyles.boldLabel);
 
         return expanded;
     }
