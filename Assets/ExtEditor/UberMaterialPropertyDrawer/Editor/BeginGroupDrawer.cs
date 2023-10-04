@@ -58,10 +58,10 @@ public class BeginGroupDrawer : MaterialPropertyDrawer
             expanded = !expanded;
             e.Use();
         }
-            //position.xが更新されている？っっぽい。
+        
         // prop.floatValue = EditorGUI.Toggle(new Rect(position.x+2, position.y+1, 18, 18), prop.floatValue == 1.0) ? 1 : 0;
-        var x1 = position.x+18;
-        _memo = _indentNum.ToString() + "position.x=" + x0 +"->"+x1;
+        // var x1 = position.x+18;
+        // _memo = _indentNum.ToString() + "position.x=" + x0 +"->"+x1;
         EditorGUI.LabelField(
             new Rect(position.x+18, position.y, 300, 18),
             this._groupName + ":" + _memo,
