@@ -17,11 +17,12 @@ Shader "Test/UberProps"
 //        [Uber(None, ARG0)]                  _UberTest0 ("_UberTestNone", range(0,1)) = 0
         
         [Uber(Face, BeginGroup)]	_BeginFaceDummy		("_BeginFaceDummy", int) = 0
-        [Uber(Face)]	_FaceTex			("Face Texture", 2D) = "white" {}
+        [Uber(Face)]	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
+    	[Uber(Face)]	_FaceTex			("Face Texture", 2D) = "white" {}
 		[Uber(Face)]	_FaceUVSpeedX		("Face UV Speed X", Range(-5, 5)) = 0.0
 		[Uber(Face)]	_FaceUVSpeedY		("Face UV Speed Y", Range(-5, 5)) = 0.0
-		[Uber(Face)]	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
-		[Uber(Face)]	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
+		[Uber(Face)]    _OutlineSoftness	("Outline Softness", Range(0,1)) = 0
+    	[Uber(Face)]	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
     	[Uber(Face, EndGroup)]		_EndFaceDummy		("_EndFaceDummy", int) = 0
 
 		[Uber(Outline, BeginGroup)] _BeginOutlineDummy	("_BeginOutlineDummy", int) = 0
@@ -30,11 +31,21 @@ Shader "Test/UberProps"
 		[Uber(Outline)] _OutlineUVSpeedX	("Outline UV Speed X", Range(-5, 5)) = 0.0
 		[Uber(Outline)] _OutlineUVSpeedY	("Outline UV Speed Y", Range(-5, 5)) = 0.0
 		[Uber(Outline)] _OutlineWidth		("Outline Thickness", Range(0, 1)) = 0
-		[Uber(Outline)] _OutlineSoftness	("Outline Softness", Range(0,1)) = 0
+		
 		[Uber(Outline, EndGroup  )] _EndOutlineDummy    ("_EndOutlineDummy", int) = 0
+    	
+    	[Uber(Unverlay, BeginToggleGroup)] _BeginUnderlayDummy ("_BeginUnderlayDummy", int) = 0
+    	
+		[Uber(Unverlay)]	[HDR]_UnderlayColor	("Border Color", Color) = (0,0,0, 0.5)
+		[Uber(Unverlay)]	_UnderlayOffsetX	("Border OffsetX", Range(-1,1)) = 0
+		[Uber(Unverlay)]	_UnderlayOffsetY	("Border OffsetY", Range(-1,1)) = 0
+		[Uber(Unverlay)]	_UnderlayDilate		("Border Dilate", Range(-1,1)) = 0
+		[Uber(Unverlay)]	_UnderlaySoftness	("Border Softness", Range(0,1)) = 0
+    	[Uber(Unverlay, EndGroup)] _EndUnderlayDummy ("_EndUnderlayDummy", int) = 0
     	
     	[Uber(Lighting, BeginToggleGroup)] _BeginLightingDummy ("_BeginLightingDummy", int) = 0
     	[Uber(Bevel, BeginGroup)] _BeginBevelDummy	("_BeginBevelDummy", int) = 0
+    	[Uber(Bevel)] _ShaderFlags		("Flags", float) = 0
 		[Uber(Bevel)] _Bevel				("Bevel", Range(0,1)) = 0.5
 		[Uber(Bevel)] _BevelOffset		("Bevel Offset", Range(-0.5,0.5)) = 0
 		[Uber(Bevel)] _BevelWidth			("Bevel Width", Range(-.5,0.5)) = 0
@@ -52,7 +63,7 @@ Shader "Test/UberProps"
     	[Uber(LocalLighting, EndGroup)] _EndLocalLightingDummy		("_EndLocalLightingDummy", int) = 0
 
     	[Uber(Bump Map, BeginGroup)] _BeginBumpMapDummy ("_BeginBumpMapDummy", int) = 0
-		[Uber(Bump Map)] _BumpMap 			("Normal map", 2D) = "bump" {}
+		[Uber(Bump Map)] [NoScaleOffset]_BumpMap 			("Normal map", 2D) = "bump" {}
 		[Uber(Bump Map)] _BumpOutline		("Bump Outline", Range(0,1)) = 0
 		[Uber(Bump Map)] _BumpFace			("Bump Face", Range(0,1)) = 0
     	[Uber(Bump Map, EndGroup)] _EndBumpMapDummy ("_EndBumpMapDummy", int) = 0
@@ -60,19 +71,13 @@ Shader "Test/UberProps"
     	[Uber(EnvironmentReflection, BeginGroup)] _BeginEnvironmentReflectionDummy ("_BeginEnvironmentReflectionDummy", int) = 0
 		[Uber(EnvironmentReflection)] _ReflectFaceColor	("Reflection Color", Color) = (0,0,0,1)
 		[Uber(EnvironmentReflection)] _ReflectOutlineColor("Reflection Color", Color) = (0,0,0,1)
-		[Uber(EnvironmentReflection)] _Cube 				("Reflection Cubemap", Cube) = "black" { /* TexGen CubeReflect */ }
+		[Uber(EnvironmentReflection)] [NoScaleOffset]_Cube 				("Reflection Cubemap", Cube) = "black" { /* TexGen CubeReflect */ }
 		[Uber(EnvironmentReflection)] _EnvMatrixRotation	("Texture Rotation", vector) = (0, 0, 0, 0)
     	[Uber(EnvironmentReflection, EndGroup)] _EndEnvironmentReflectionDummy ("_EndEnvironmentReflectionDummy", int) = 0
 		
     	[Uber(Lighting, EndGroup)] _EndLightingDummy ("_EndLightingDummy", int) = 0
 
-    	[Uber(Unverlay, BeginToggleGroup)] _BeginUnderlayDummy ("_BeginUnderlayDummy", int) = 0
-		[Uber(Unverlay)]	[HDR]_UnderlayColor	("Border Color", Color) = (0,0,0, 0.5)
-		[Uber(Unverlay)]	_UnderlayOffsetX	("Border OffsetX", Range(-1,1)) = 0
-		[Uber(Unverlay)]	_UnderlayOffsetY	("Border OffsetY", Range(-1,1)) = 0
-		[Uber(Unverlay)]	_UnderlayDilate		("Border Dilate", Range(-1,1)) = 0
-		[Uber(Unverlay)]	_UnderlaySoftness	("Border Softness", Range(0,1)) = 0
-    	[Uber(Unverlay, EndGroup)] _EndUnderlayDummy ("_EndUnderlayDummy", int) = 0
+    	
 
     	[Uber(Glow, BeginToggleGroup)] _BeginGlowDummy ("_BeginGlowDummy", int) = 0
 		[Uber(Glow)]	[HDR]_GlowColor		("Color", Color) = (0, 1, 0, 0.5)
@@ -85,19 +90,15 @@ Shader "Test/UberProps"
 		_WeightNormal		("Weight Normal", float) = 0
 		_WeightBold			("Weight Bold", float) = 0.5
 
-		_ShaderFlags		("Flags", float) = 0
-		_ScaleRatioA		("Scale RatioA", float) = 1
-		_ScaleRatioB		("Scale RatioB", float) = 1
-		_ScaleRatioC		("Scale RatioC", float) = 1
-
 		_MainTex			("Font Atlas", 2D) = "white" {}
 		_TextureWidth		("Texture Width", float) = 512
 		_TextureHeight		("Texture Height", float) = 512
 		_GradientScale		("Gradient Scale", float) = 5.0
 		_ScaleX				("Scale X", float) = 1.0
 		_ScaleY				("Scale Y", float) = 1.0
-		_PerspectiveFilter	("Perspective Correction", Range(0, 1)) = 0.875
+		
 		_Sharpness			("Sharpness", Range(-1,1)) = 0
+    	_PerspectiveFilter	("Perspective Correction", Range(0, 1)) = 0.875
 
 		_VertexOffsetX		("Vertex OffsetX", float) = 0
 		_VertexOffsetY		("Vertex OffsetY", float) = 0
@@ -115,6 +116,10 @@ Shader "Test/UberProps"
 
 		_CullMode			("Cull Mode", Float) = 0
 		_ColorMask			("Color Mask", Float) = 15
+    	
+    	_ScaleRatioA		("Scale RatioA", float) = 1
+		_ScaleRatioB		("Scale RatioB", float) = 1
+		_ScaleRatioC		("Scale RatioC", float) = 1
     }
     SubShader
     {
