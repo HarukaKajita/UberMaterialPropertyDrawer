@@ -128,7 +128,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             return GroupNest.Count;
         }
 
-        internal static string GroupStr()
+        private static string GroupStr()
         {
             return string.Join(", ", GroupNest);
         }
