@@ -34,7 +34,14 @@ public class EnumDrawer : MaterialPropertyDrawer
             throw;
         }
     }
-    
+    // name,value,name,value,... pairs: explicit names & values
+    public EnumDrawer(string groupName, string n1, float v1) : this(groupName, new[] {n1}, new[] {v1}) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2) : this(groupName, new[] { n1, n2 }, new[] { v1, v2 }) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2, string n3, float v3) : this(groupName, new[] { n1, n2, n3 }, new[] { v1, v2, v3 }) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2, string n3, float v3, string n4, float v4) : this(groupName, new[] { n1, n2, n3, n4 }, new[] { v1, v2, v3, v4 }) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2, string n3, float v3, string n4, float v4, string n5, float v5) : this(groupName, new[] { n1, n2, n3, n4, n5 }, new[] { v1, v2, v3, v4, v5 }) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2, string n3, float v3, string n4, float v4, string n5, float v5, string n6, float v6) : this(groupName, new[] { n1, n2, n3, n4, n5, n6 }, new[] { v1, v2, v3, v4, v5, v6 }) {}
+    public EnumDrawer(string groupName, string n1, float v1, string n2, float v2, string n3, float v3, string n4, float v4, string n5, float v5, string n6, float v6, string n7, float v7) : this(groupName, new[] { n1, n2, n3, n4, n5, n6, n7 }, new[] { v1, v2, v3, v4, v5, v6, v7 }) {}
     public EnumDrawer(string groupName, string[] enumNames, float[] vals)
     {
         this._groupName = groupName;
@@ -47,6 +54,7 @@ public class EnumDrawer : MaterialPropertyDrawer
         for (int i = 0; i < vals.Length; ++i)
             values[i] = (int)vals[i];
     }
+
     static bool IsPropertyTypeSuitable(MaterialProperty prop)
     {
         return prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range || prop.type == MaterialProperty.PropType.Int;
