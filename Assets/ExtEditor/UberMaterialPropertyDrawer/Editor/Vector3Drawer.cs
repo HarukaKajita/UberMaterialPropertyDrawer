@@ -16,7 +16,7 @@ public class Vector3Drawer : MaterialPropertyDrawer
         if (UberDrawer.GetGroupExpanded(_groupName))
             return EditorGUIUtility.singleLineHeight;
         else
-            return 0;
+            return -2;
     }
 
     public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
