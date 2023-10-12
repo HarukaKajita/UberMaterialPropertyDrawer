@@ -15,7 +15,7 @@ Shader "Test/UberProps"
 //        [Uber(NestGroup,  EndGroup)]        _EndNestGroup ("_EndNestGroup", int) = 0
 //        [Uber(TestGroup,  EndGroup)]        _EndSomGroup ("_EndSomGroup", int) = 0
 //        [Uber(None, ARG0)]                  _UberTest0 ("_UberTestNone", range(0,1)) = 0
-        
+        [Uber(_,Init)]
         [Uber(Face, BeginGroup)]	_BeginFaceDummy		("_", int) = 0
         [Uber(Face)]	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
     	[Uber(Face)]	_FaceTex			("Face Texture", 2D) = "white" {}
@@ -24,7 +24,7 @@ Shader "Test/UberProps"
 		[Uber(Face)]    _OutlineSoftness	("Outline Softness", Range(0,1)) = 0
     	[Uber(Face)]	_FaceDilate			("Face Dilate", Range(-1,1)) = 0
     	[Uber(Face, EndGroup)]		_EndFaceDummy		("_", int) = 0
-
+		
 		[Uber(Outline, BeginGroup)] _BeginOutlineDummy	("_", int) = 0
     	[Uber(Outline)] [HDR]_OutlineColor	("Outline Color", Color) = (0,0,0,1)
 		[Uber(Outline)] _OutlineTex			("Outline Texture", 2D) = "white" {}

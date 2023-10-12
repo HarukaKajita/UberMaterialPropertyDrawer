@@ -34,7 +34,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             else if (drawer == "BeginGroup")  this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
             else if (drawer == "Vector2")     this._propertyDrawer = new Vector2Drawer(groupName);
             else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
-            
+            else if (drawer == "Init")        
+            {
+                GroupExpanded.Clear();
+                GroupNest.Clear();
+            }
         }
 
         public UberDrawer(string groupName, string drawer, string arg0)
