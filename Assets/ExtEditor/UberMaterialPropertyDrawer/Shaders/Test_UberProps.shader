@@ -2,20 +2,21 @@ Shader "Test/UberProps"
 {
     Properties
     {
-//        _AAA ("_AAA", 2D) = "white" {}
-//        [Uber(Test, ARG0)]                  _UberTest ("_UberTest", int) = 0
-//        [Uber(TestGroup,  BeginToggleGroup)]_UseSomeFeature ("_UseSomeFeature", int) = 1
-//        [Uber(TestGroup,  GroupName)]       _SomeFeatureMap ("_SomeFeatureMap", 2D) = "white" {}
-//        [Uber(TestGroup,  GroupName)]       _SomeFeatureWidth ("_SomeFeatureWidth", float) = 0
-//        [Uber(NestGroup,  BeginGroup)]      _UseNestFeature ("_UseNestFeature", int) = 1
-//        [Uber(NestGroup)]                   _NestFeatureColor ("_NestFeatureColor", color) = (0.2,0.7,0.8)
-//        [Uber(GrandChild, BeginGroup)]      _BeginGroundChild ("_BeginGroundChild", int) = 1
-//        [Uber(GrandChild, Vector2)]         _GrandChildVector ("_GrandChildVector", vector) = (0,0,0,0)
-//        [Uber(GrandChild, EndGroup)]        _EndGroundChild ("_EndGroundChild", int) = 0
-//        [Uber(NestGroup,  EndGroup)]        _EndNestGroup ("_EndNestGroup", int) = 0
-//        [Uber(TestGroup,  EndGroup)]        _EndSomGroup ("_EndSomGroup", int) = 0
-//        [Uber(None, ARG0)]                  _UberTest0 ("_UberTestNone", range(0,1)) = 0
-        [Uber(_,Init)]
+        _AAA ("_AAA", 2D) = "white" {}
+        [Uber(Test, ARG0)]                  _UberTest ("_UberTest", int) = 0
+        [Uber(TestGroup,  BeginToggleGroup)]_UseSomeFeature ("_UseSomeFeature", int) = 1
+        [Uber(TestGroup,  GroupName)]       _SomeFeatureMap ("_SomeFeatureMap", 2D) = "white" {}
+        [Uber(TestGroup,  GroupName)]       _SomeFeatureWidth ("_SomeFeatureWidth", float) = 0
+        [Uber(NestGroup,  BeginGroup)]      _UseNestFeature ("_UseNestFeature", int) = 1
+        [Uber(NestGroup)]                   _NestFeatureColor ("_NestFeatureColor", color) = (0.2,0.7,0.8)
+        [Uber(GrandChild, BeginGroup)]      _BeginGroundChild ("_BeginGroundChild", int) = 1
+        [Uber(GrandChild, Vector2)]         _GrandChildVector ("_GrandChildVector", vector) = (0,0,0,0)
+        [Uber(GrandChild, EndGroup)]        _EndGroundChild ("_EndGroundChild", int) = 0
+        [Uber(NestGroup,  EndGroup)]        _EndNestGroup ("_EndNestGroup", int) = 0
+        [Uber(TestGroup,  EndGroup)]        _EndSomGroup ("_EndSomGroup", int) = 0
+        [Uber(None, ARG0)]                  _UberTest0 ("_UberTestNone", range(0,1)) = 0
+    	
+        [Uber(_,Init)] _Init ("_", int) = 0
         [Uber(Face, BeginGroup)]	_BeginFaceDummy		("_", int) = 0
         [Uber(Face)]	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
     	[Uber(Face)]	_FaceTex			("Face Texture", 2D) = "white" {}
