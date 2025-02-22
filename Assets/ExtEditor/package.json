@@ -1,0 +1,14 @@
+{
+    "name": "com.harukakajita.extEditor",
+    "version": "1.0.0",
+    "displayName": "ExtEditor",
+    "description": "Editor Extensions",
+    "unity": "2022.3",
+    "keywords": [
+        "editor"
+    ],
+    "author": {
+        "name": "Haruka Kajita",
+        "email": "kajitaj63b3@gmail.com"
+    }
+}
