@@ -107,9 +107,11 @@ Shader "Test/UberProps"
 		[Uber(Debug Setting)]	_MaskSoftnessX		("Mask SoftnessX", float) = 0
 		[Uber(Debug Setting)]	_MaskSoftnessY		("Mask SoftnessY", float) = 0
 
-		[Uber(Debug Setting)]	_StencilComp		("Stencil Comparison", Float) = 8
+		[Uber(Debug Setting, Enum, CompareFunction)]
+    							_StencilComp		("Stencil Comparison", Float) = 8
 		[Uber(Debug Setting)]	_Stencil			("Stencil ID", Float) = 0
-		[Uber(Debug Setting)]	_StencilOp			("Stencil Operation", Float) = 0
+		[Uber(Debug Setting, Enum, StencilOp)]
+    							_StencilOp			("Stencil Operation", Float) = 0
 		[Uber(Debug Setting)]	_StencilWriteMask	("Stencil Write Mask", Float) = 255
 		[Uber(Debug Setting)]	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
