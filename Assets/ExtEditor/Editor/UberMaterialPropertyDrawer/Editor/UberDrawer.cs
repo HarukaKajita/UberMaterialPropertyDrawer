@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace ExtEditor.UberMaterialPropertyDrawer.Editor
+namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public class UberDrawer : MaterialPropertyDrawer
     {
@@ -47,14 +46,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer.Editor
             this._drawer = drawer;
             this._arg0 = arg0;
             this._propertyDrawer = null;
-            if (drawer == "Enum") this._propertyDrawer = new EnumDrawer(groupName, arg0);
+            if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, arg0);
         }
         
         public UberDrawer(string groupName, string drawer, string[] enumNames, float[] vals)
         {
             this._groupName = groupName;
             this._drawer = drawer;
-            if (drawer == "Enum") this._propertyDrawer = new EnumDrawer(groupName, enumNames, vals);
+            if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, enumNames, vals);
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

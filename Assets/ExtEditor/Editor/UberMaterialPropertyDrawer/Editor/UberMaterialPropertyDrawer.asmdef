@@ -1,6 +1,6 @@
 {
     "name": "UberMaterialPropertyDrawer",
-    "rootNamespace": "",
+    "rootNamespace": "ExtEditor.UbermaterialPropertyDrawer",
     "references": [],
     "includePlatforms": [
         "Editor"
