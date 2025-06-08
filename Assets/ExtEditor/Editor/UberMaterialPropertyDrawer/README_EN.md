@@ -23,6 +23,8 @@ The system is primarily driven by the `UberDrawer` class, which acts as a dispat
     -   `[Uber(GroupName, Vector2)]`: Provides a compact drawer for `Vector2` properties.
     -   `[Uber(GroupName, Vector3)]`: Provides a compact drawer for `Vector3` properties.
     -   These ensure consistent layout within groups.
+-   **Curve Texture Drawer:**
+    -   `[Uber(GroupName, CurveTexture, size,mode,precision)]`: Shows up to four `AnimationCurve` fields and bakes them into a texture stored as a sub-asset of the material. `size` is the texture width, `mode` is `value` or `cumulative`, and `precision` is `8bit` or `half`.
 -   **Property Visibility:**
     -   Standard material properties tagged with `[Uber(GroupName)]` are drawn using the default property drawer but are only visible if `GroupName` (and all its parent groups, if nested) are expanded.
 -   **Nesting:** Groups can be nested within other groups to create deeper hierarchies.
@@ -86,7 +88,12 @@ Then in the shader:
     [Uber(Transform, EndGroup)] _TransformEnd ("End Transform", Int) = 0
 ```
 
-**6. Nesting Groups:**
+**6. Baking Curves to a Texture:**
+```shaderlab
+    [Uber(Curves, CurveTexture, 256,cumulative,half)] _CurveTex ("Curve Texture", 2D) = "white" {}
+```
+
+**7. Nesting Groups:**
 Simply define a `BeginGroup` within another active group.
 ```shaderlab
     [Uber(Parent, BeginGroup)] _ParentFoldout ("Parent Group", Int) = 0

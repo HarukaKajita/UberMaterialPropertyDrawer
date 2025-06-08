@@ -23,6 +23,8 @@ Uber Material Property Drawerは、Unityで高度にカスタマイズされ整�
     -   `[Uber(GroupName, Vector2)]`: `Vector2`プロパティ用のコンパクトなドロワーを提供します。
     -   `[Uber(GroupName, Vector3)]`: `Vector3`プロパティ用のコンパクトなドロワーを提供します。
     -   これらはグループ内での一貫したレイアウトを保証します。
+-   **カーブテクスチャドロワー:**
+    -   `[Uber(GroupName, CurveTexture, size,mode,precision)]`: 最大4つの`AnimationCurve`を入力し、テクスチャにベイクしてマテリアルのサブアセットとして保持します。`size`はテクスチャ幅、`mode`は`value`または`cumulative`、`precision`は`8bit`または`half`を指定します。
 -   **プロパティの可視性:**
     -   `[Uber(GroupName)]`でタグ付けされた標準のマテリアルプロパティは、デフォルトのプロパティドロワーを使用して描画されますが、`GroupName`（およびネストされている場合はすべての親グループ）が展開されている場合にのみ表示されます。
 -   **ネスティング:** グループを他のグループ内にネストして、より深い階層を作成できます。
@@ -86,7 +88,12 @@ public enum MyBlendMode { Alpha, Additive, Multiply }
     [Uber(Transform, EndGroup)] _TransformEnd ("End Transform", Int) = 0
 ```
 
-**6. グループのネスティング:**
+**6. カーブのベイク:**
+```shaderlab
+    [Uber(Curves, CurveTexture, 256,cumulative,half)] _CurveTex ("Curve Texture", 2D) = "white" {}
+```
+
+**7. グループのネスティング:**
 アクティブなグループ内にもう一つの`BeginGroup`を定義するだけです。
 ```shaderlab
     [Uber(Parent, BeginGroup)] _ParentFoldout ("Parent Group", Int) = 0

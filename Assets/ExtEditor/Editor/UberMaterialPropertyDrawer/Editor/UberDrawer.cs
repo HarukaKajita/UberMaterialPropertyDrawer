@@ -33,6 +33,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             else if (drawer == "BeginGroup")  this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
             else if (drawer == "Vector2")     this._propertyDrawer = new Vector2Drawer(groupName);
             else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
+            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer();
             else if (drawer == "Init")        
             {
                 GroupExpanded.Clear();
@@ -47,6 +48,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             this._arg0 = arg0;
             this._propertyDrawer = null;
             if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, arg0);
+            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer(arg0);
         }
         
         public UberDrawer(string groupName, string drawer, string[] enumNames, float[] vals)
