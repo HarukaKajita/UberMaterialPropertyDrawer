@@ -25,7 +25,9 @@ The system is primarily driven by the `UberDrawer` class, which acts as a dispat
     -   These ensure consistent layout within groups.
 -   **Curve Texture Drawer:**
     -   `[Uber(GroupName, CurveTexture, size,mode,precision)]`: Shows up to four `AnimationCurve` fields and bakes them into a texture stored as a sub-asset of the material. `size` is the texture width, `mode` is `value` or `cumulative`, and `precision` is `8bit` or `half`.
--   **Property Visibility:**
+    -   **Gradient Texture Drawer:**
+    -   `[Uber(GroupName, GradientTexture, size,precision)]`: Displays a `Gradient` field and bakes it into a texture stored as a sub-asset of the material. `size` sets the texture width and `precision` is `8bit` or `half`.
+    -   **Property Visibility:**
     -   Standard material properties tagged with `[Uber(GroupName)]` are drawn using the default property drawer but are only visible if `GroupName` (and all its parent groups, if nested) are expanded.
 -   **Nesting:** Groups can be nested within other groups to create deeper hierarchies.
 -   **State Initialization:**
@@ -93,7 +95,12 @@ Then in the shader:
     [Uber(Curves, CurveTexture, 256,cumulative,half)] _CurveTex ("Curve Texture", 2D) = "white" {}
 ```
 
-**7. Nesting Groups:**
+**7. Baking Gradients to a Texture:**
+```shaderlab
+    [Uber(Curves, GradientTexture, 256,half)] _GradientTex ("Gradient Texture", 2D) = "white" {}
+```
+
+**8. Nesting Groups:**
 Simply define a `BeginGroup` within another active group.
 ```shaderlab
     [Uber(Parent, BeginGroup)] _ParentFoldout ("Parent Group", Int) = 0
