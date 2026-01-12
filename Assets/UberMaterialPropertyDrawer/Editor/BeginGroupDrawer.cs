@@ -26,14 +26,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            Debug.Log("GetPropertyHeight Begin : " + _groupName);
+            UberDrawerLogger.Log("GetPropertyHeight Begin : " + _groupName);
             if (ParentIsFolded()) return -2;
             return 22 + 2; //調整した方が良いかも？
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            Debug.Log("OnGUI Begin : " + _groupName);
+            UberDrawerLogger.Log("OnGUI Begin : " + _groupName);
             var newState = false;
             if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberDrawer.GetGroupExpanded(_groupName));
             EditorGUI.indentLevel++;
@@ -42,7 +42,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded)
         {
-            Debug.Log("BeginPanel " + _groupName);
+            UberDrawerLogger.Log("BeginPanel " + _groupName);
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); //背景の淵が何故か変わる
             style.fixedHeight = 22; //背景の高さ

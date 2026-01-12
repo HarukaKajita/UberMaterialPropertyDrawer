@@ -31,7 +31,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
             catch (Exception)
             {
-                Debug.LogWarningFormat("Failed to create MaterialEnum, enum {0} not found", enumName);
+                UberDrawerLogger.LogWarning($"Failed to create MaterialEnum, enum {enumName} not found");
                 throw;
             }
         }

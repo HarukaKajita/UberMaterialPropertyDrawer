@@ -16,7 +16,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             this._indentNum = Mathf.Max(0, UberDrawer.GetGroupIntentLevel() - 1);
             var popGroup = UberDrawer.PopGroup();
             if (groupName != popGroup)
-                Debug.LogError("Not Corresponded Group Begin-End : " + popGroup + " - " + groupName);
+                UberDrawerLogger.LogError("Not Corresponded Group Begin-End : " + popGroup + " - " + groupName);
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)

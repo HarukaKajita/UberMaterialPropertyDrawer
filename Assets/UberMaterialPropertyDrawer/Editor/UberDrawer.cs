@@ -5,6 +5,37 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    internal static class UberDrawerLogger
+    {
+        static UberDrawerLogger()
+        {
+            _debugLevel = DebugLevel.Warning;
+        }
+        // プロパティの描画プロセスをDebug.Logで出力してデバッグする時用の制御
+        private static readonly DebugLevel _debugLevel;
+        enum DebugLevel
+        {
+            None,
+            Error,
+            Warning,
+            Log
+        }
+        public static void Log(string message)
+        {
+            if(_debugLevel >= DebugLevel.Log)
+                Debug.Log(message);
+        }
+        public static void LogWarning(string message)
+        {
+            if (_debugLevel >= DebugLevel.Warning)
+                Debug.LogWarning(message);
+        }
+        public static void LogError(string message)
+        {
+            if (_debugLevel >= DebugLevel.Error)
+                Debug.LogError(message);
+        }
+    }
     public class UberDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = null;
@@ -106,22 +137,23 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return debugStr;
         }
         
+        // グループが開かれた描画状態になっているかどうかのboolを返す
         internal static bool GetGroupExpanded(string groupName)
         {
             if (GroupExpanded.TryGetValue(groupName, out var expanded))
             {
-                // Debug.Log("GetGroupExpanded : Existed " + groupName + " : " + expanded);
+                UberDrawerLogger.Log("GetGroupExpanded : Existed " + groupName + " : " + expanded);
                 return expanded;
             }
             else
             {
                 var defaultValue = false;
                 GroupExpanded.Add(groupName, defaultValue);
-                // Debug.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + defaultValue);
+                UberDrawerLogger.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + defaultValue);
                 return defaultValue;
             }
         }
-
+        // グループの開閉状態を設定する
         internal static void SetGroupExpanded(string groupName, bool state)
         {
             GroupExpanded[groupName] = state;
@@ -129,13 +161,13 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public static void PushGroup(string groupName)
         {
-            Debug.Log("Push : " + groupName);
+            UberDrawerLogger.Log("Push : " + groupName);
             GroupNest.Push(groupName);
         }
         internal static string PopGroup()
         {
             var popGroup = GroupNest.Pop();
-            Debug.Log("Pop  : " + popGroup);
+            UberDrawerLogger.Log("Pop  : " + popGroup);
             return popGroup;
         }
 
@@ -150,15 +182,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
         internal static bool ParentGroupIsFolded(int indentNum)
         {
-            Debug.Log("indentNum : " + indentNum);
-            Debug.Log("GroupNest : " + GroupNest.Count);
+            UberDrawerLogger.Log("indentNum : " + indentNum);
+            UberDrawerLogger.Log("GroupNest : " + GroupNest.Count);
             var groupArray = GroupNest.Reverse().ToArray();
             if (GroupNest.Count < indentNum) return false;
-            Debug.Log("Parents : " + string.Join(", ", groupArray));
+            UberDrawerLogger.Log("Parents : " + string.Join(", ", groupArray));
             for (var i = 0; i < indentNum; i++)
             {
                 var parentalGroup = groupArray[i];
-                Debug.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "expanded" : "folded"));
+                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "expanded" : "folded"));
                 if (!GetGroupExpanded(parentalGroup)) return true;
             }
             return false;
