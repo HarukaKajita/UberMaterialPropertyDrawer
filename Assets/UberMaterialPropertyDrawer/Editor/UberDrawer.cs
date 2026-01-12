@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -44,28 +45,41 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private static readonly Dictionary<string, bool> GroupExpanded = new();
         private static readonly Stack<string> GroupNest = new();
         private readonly MaterialPropertyDrawer _propertyDrawer;
-        public UberDrawer() { }
 
-        public UberDrawer(string groupName)
-        {
-            this._groupName = groupName;
-            this._propertyDrawer = null;
-        }
+        public UberDrawer(string groupName) : this(groupName, null, Array.Empty<string>()) {}
+        public UberDrawer(string groupName, string drawer) : this(groupName, drawer, Array.Empty<string>()) {}
+        public UberDrawer(string groupName, string drawer, string kw1) : this(groupName, drawer, new[] { kw1 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2) : this(groupName, drawer, new[] { kw1, kw2 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3) : this(groupName, drawer, new[] { kw1, kw2, kw3 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6, string kw7) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6, kw7 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6, string kw7, string kw8) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6, kw7, kw8 }) {}
+        public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6, string kw7, string kw8, string kw9) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6, kw7, kw8, kw9 }) {}
 
-        public UberDrawer(string groupName, string drawer)
+        public UberDrawer(string groupName, string drawer, params string[] args)
         {
             this._groupName = groupName;
             this._drawer = drawer;
             this._propertyDrawer = null;
-            var success = GroupNest.TryPeek(out var parentGroup);
-            parentGroup = success ? parentGroup : "";
+            var existParent = GroupNest.TryPeek(out var parentGroup);
+            parentGroup = existParent ? parentGroup : "";
             if (drawer == "BeginToggleGroup") this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
             else if (drawer == "EndGroup")    this._propertyDrawer = new EndGroupDrawer(groupName, GroupStr());
             else if (drawer == "BeginGroup")  this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
             else if (drawer == "Vector2")     this._propertyDrawer = new Vector2Drawer(groupName);
             else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
-            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer();
-            else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer();
+            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer(groupName, args);
+            else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer(groupName, args);
+            else if (drawer == "Enum")
+            {
+                // 要素数が1ならEnumのクラス名指定
+                if(args.Length == 1)
+                    this._propertyDrawer = new UberEnumDrawer(groupName, args[0]);
+                else //要素数が2以上（2の倍数）なら名前と値の組を直接記述している
+                    this._propertyDrawer = new UberEnumDrawer(groupName, args);
+            }
             else if (drawer == "ResetGroup")        
             {
                 GroupExpanded.Clear();
@@ -73,16 +87,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
         }
 
-        public UberDrawer(string groupName, string drawer, string arg0)
-        {
-            this._groupName = groupName;
-            this._drawer = drawer;
-            this._arg0 = arg0;
-            this._propertyDrawer = null;
-            if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, arg0);
-            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer(arg0);
-            else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer(arg0);
-        }
+        // public UberDrawer(string groupName, string drawer, string arg0)
+        // {
+        //     this._groupName = groupName;
+        //     this._drawer = drawer;
+        //     this._arg0 = arg0;
+        //     this._propertyDrawer = null;
+        //     if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, arg0);
+        //     else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer(groupName, arg0);
+        //     else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer(groupName, arg0);
+        // }
         
         public UberDrawer(string groupName, string drawer, string[] enumNames, float[] vals)
         {

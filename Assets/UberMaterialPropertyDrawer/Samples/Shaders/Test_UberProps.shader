@@ -11,6 +11,10 @@ Shader "Test/UberProps"
         [Uber(NestGroup)]                   _NestFeatureColor ("_NestFeatureColor", color) = (0.2,0.7,0.8)
         [Uber(GrandChild, BeginGroup)]      _BeginGroundChild ("_BeginGroundChild", int) = 1
         [Uber(GrandChild, Vector2)]         _GrandChildVector ("_GrandChildVector", vector) = (0,0,0,0)
+    	[Uber(GrandChild, CurveTexture, res256, ch1, bit8)]
+    										_GrandChildCurve ("_GrandChildCurve", 2D) = "black" {}
+    	[Uber(GrandChild, GradientTexture, res256, ch1, bit8)]
+    										_GrandChildGradient ("_GrandChildGradient", 2D) = "black" {}
         [Uber(GrandChild, EndGroup)]        _EndGroundChild ("_EndGroundChild", int) = 0
         [Uber(NestGroup,  EndGroup)]        _EndNestGroup ("_EndNestGroup", int) = 0
         [Uber(TestGroup,  EndGroup)]        _EndSomGroup ("_EndSomGroup", int) = 0

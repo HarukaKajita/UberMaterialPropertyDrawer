@@ -6,23 +6,40 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public class GradientTextureDrawer : MaterialPropertyDrawer
     {
-        private int _size = 256;
+        private readonly string _groupName = "";
+
+        private int _channelNum = 1;
+        private int _resolution = 256;
         private bool _half = false;
 
-        public GradientTextureDrawer() { }
-
-        public GradientTextureDrawer(string args)
+        public GradientTextureDrawer(string groupName, string[] args)
         {
-            if (string.IsNullOrEmpty(args)) return;
-            var tokens = args.Split(',');
-            if (tokens.Length > 0) int.TryParse(tokens[0], out _size);
-            if (tokens.Length > 1) _half = tokens[1].Trim().ToLowerInvariant().StartsWith("h");
+            this._groupName = groupName;
+            if (args == null || args.Length == 0) return;
+            foreach (var argStr in args)
+            {
+                if (argStr.StartsWith("ch"))
+                {
+                    this._channelNum = int.Parse(argStr[2..]);
+                }
+                else if (argStr.StartsWith("res"))
+                {
+                    this._resolution = int.Parse(argStr[3..]);
+                }
+                else if (argStr.StartsWith("bit"))
+                {
+                    this._half = int.Parse(argStr[3..]) == 16;
+                }
+            }
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            const int lines = 2;
-            return EditorGUIUtility.singleLineHeight * lines + 4;
+            if (!UberDrawer.GetGroupExpanded(_groupName))
+                return -2;
+            var gradientHeight = EditorGUIUtility.singleLineHeight;
+            var textureHeight = EditorGUIUtility.singleLineHeight * 3.8f;
+            return gradientHeight + textureHeight + 4;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -32,6 +49,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.LabelField(position, "GradientTexture used on non-texture property");
                 return;
             }
+            
+            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
 
             var mat = editor.target as Material;
             if (mat == null) return;
@@ -88,15 +107,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             var format = _half ? TextureFormat.RGBAHalf : TextureFormat.RGBA32;
             var tex = data.texture;
-            if (tex == null || tex.width != _size || tex.format != format)
+            if (tex == null || tex.width != _resolution || tex.format != format)
             {
-                tex = new Texture2D(_size, 1, format, false, true);
+                tex = new Texture2D(_resolution, 1, format, false, true);
             }
 
-            var colors = new Color[_size];
-            for (int i = 0; i < _size; i++)
+            var colors = new Color[_resolution];
+            for (int i = 0; i < _resolution; i++)
             {
-                float t = (float)i / (_size - 1);
+                float t = (float)i / (_resolution - 1);
                 colors[i] = data.gradient.Evaluate(t);
             }
             tex.SetPixels(colors);
