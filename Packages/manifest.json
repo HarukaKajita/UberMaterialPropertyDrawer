@@ -1,7 +1,8 @@
 {
   "dependencies": {
+    "com.kajitaharuka.exportpackageextension": "git@github.com:HarukaKajita/ExportPackageExtension.git?path=Assets/ExportPackageExtension",
     "com.unity.formats.fbx": "4.2.1",
-    "com.unity.ide.rider": "3.0.34",
+    "com.unity.ide.rider": "3.0.38",
     "com.unity.render-pipelines.universal": "14.0.10",
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.timeline": "1.7.6",

@@ -7,6 +7,13 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.kajitaharuka.exportpackageextension": {
+      "version": "git@github.com:HarukaKajita/ExportPackageExtension.git?path=Assets/ExportPackageExtension",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "05390c4908293b7fc70e359b8ba1ee27ae28aa12"
+    },
     "com.unity.burst": {
       "version": "1.8.12",
       "depth": 1,
@@ -35,7 +42,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.34",
+      "version": "3.0.38",
       "depth": 0,
       "source": "registry",
       "dependencies": {
