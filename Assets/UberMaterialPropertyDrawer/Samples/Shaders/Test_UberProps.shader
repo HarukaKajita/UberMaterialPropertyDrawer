@@ -16,7 +16,7 @@ Shader "Test/UberProps"
         [Uber(TestGroup,  EndGroup)]        _EndSomGroup ("_EndSomGroup", int) = 0
         [Uber(None, ARG0)]                  _UberTest0 ("_UberTestNone", range(0,1)) = 0
     	
-        [Uber(_,Init)] _Init ("_", int) = 0
+        [Uber(_,ResetGroup)] _Init ("_", int) = 0
         [Uber(Face, BeginGroup)]	_BeginFaceDummy		("_", int) = 0
         [Uber(Face)]	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
     	[Uber(Face)]	_FaceTex			("Face Texture", 2D) = "white" {}

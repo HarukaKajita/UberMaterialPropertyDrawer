@@ -66,7 +66,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
             else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer();
             else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer();
-            else if (drawer == "Init")        
+            else if (drawer == "ResetGroup")        
             {
                 GroupExpanded.Clear();
                 GroupNest.Clear();
