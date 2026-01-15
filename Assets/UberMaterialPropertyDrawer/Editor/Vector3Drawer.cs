@@ -25,7 +25,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (!UberDrawer.GetGroupExpanded(_groupName)) return;
 
             var propName = ObjectNames.NicifyVariableName(label.text);
-            var totalIndentSize = EditorGUI.indentLevel * 15;
+            var totalIndentSize = EditorGUI.indentLevel * Constants.IndentWidth;
             var labelWidth = position.width * 0.3f;
             var valueWidth = position.width - labelWidth + totalIndentSize;
             var tmp_labelWidth = EditorGUIUtility.labelWidth;

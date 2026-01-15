@@ -49,7 +49,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             style.border = new RectOffset(7, 7, 4, 4); //背景の淵が何故か変わる
             style.fixedHeight = 22; //背景の高さ
             position.y += 6;
-            var indentOffset = 15 * _indentNum;
+            var indentOffset = Constants.IndentWidth * _indentNum;
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width, style.fixedHeight);
             GUI.Box(bgRect, "", style); //背景
             var interactiveRect = new Rect(bgRect.x + 20 + indentOffset, bgRect.y, bgRect.width, bgRect.height);
