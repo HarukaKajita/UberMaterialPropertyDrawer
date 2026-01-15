@@ -37,17 +37,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (!UberDrawer.GetGroupExpanded(_groupName))
                 return -2;
-            var propertyHeight = 0f;
-            var interval = 0f;
-            // gradientHeight
-            propertyHeight += EditorGUIUtility.singleLineHeight;
-            interval += 2;
-            // textureHeight
-            propertyHeight += GUIHelper.TexturePropertyHeight;
-            interval += 2;
-            // tilingOffsetHeight
-            propertyHeight += EditorGUIUtility.singleLineHeight*2f+2;
-            interval += 2;
+            var propertyHeight =GUIHelper.TexturePropertyHeight;
+            var interval = 2;
             return propertyHeight + interval;
         }
 
@@ -79,29 +70,34 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             EditorGUI.BeginChangeCheck();
             
+            // Label GUI
+            var indentSize = GUIHelper.IndentWidth;
+            var propName = ObjectNames.NicifyVariableName(label.text);
+            var labelWidth = position.width * 0.3f;
+            var labelRect = new Rect(position.x, position.y, labelWidth, EditorGUIUtility.singleLineHeight);
+            EditorGUI.LabelField(labelRect, propName);
+            
+            var valueWidth = position.width - labelRect.width + indentSize*2;
+            var valueX = labelRect.width;
+            
             // Gradient GUI
-            var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
-            data.gradient = EditorGUI.GradientField(line, label.text, data.gradient);
-            line.y += EditorGUIUtility.singleLineHeight;
-            line.y += 2;
+            var gradientRect = new Rect(valueX, position.y, valueWidth/4, EditorGUIUtility.singleLineHeight);
+            data.gradient = EditorGUI.GradientField(gradientRect, "", data.gradient);
             
             // Texture GUI
+            var texturePropWidth = GUIHelper.TexturePropertyHeight;
+            var textureRect = new Rect(gradientRect.xMax, position.y, texturePropWidth, texturePropWidth);
             EditorGUI.BeginDisabledGroup(true);
-            var textureRect = new Rect(line.x, line.y, line.width, GUIHelper.TexturePropertyHeight);
-            editor.TextureProperty(textureRect, prop, label.text, false);
+            editor.TextureProperty(textureRect, prop, "", false);
             EditorGUI.EndDisabledGroup();
-            // EditorGUI.DrawRect(textureRect, new Color(1, 1, 1, 0.2f));
-            textureRect.y += textureRect.height;
-            textureRect.y += 2;
             
             // Tiling Offset GUI
-            var totalIndentSize = EditorGUI.indentLevel * GUIHelper.IndentWidth;
-            var x = textureRect.x + totalIndentSize;
-            var width = textureRect.width - totalIndentSize;
-            var tilingOffsetRect = new Rect(x, textureRect.y, width, EditorGUIUtility.singleLineHeight*2+2);
+            var tillingOffsetHeight = GUIHelper.TillingOffsetPropertyHeight;
+            var tillingOffsetY = position.y + (textureRect.height - tillingOffsetHeight)/2;
+            var tillingOffsetX = textureRect.xMax+2;
+            var width = valueWidth - gradientRect.width - textureRect.width;
+            var tilingOffsetRect = new Rect(tillingOffsetX, tillingOffsetY, width, tillingOffsetHeight);
             editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
-            tilingOffsetRect.y += tilingOffsetRect.height;
-            tilingOffsetRect.y += 2;
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -111,10 +107,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
                 prop.textureValue = tex;
-                // AssetDatabase.ImportAsset(path);
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(tex);
                 EditorUtility.SetDirty(mat);
+                // AssetDatabase.ImportAsset(path);
                 // AssetDatabase.SaveAssets();
             }
 
