@@ -1,0 +1,13 @@
+{
+  "name": "com.kajitaharuka.ubermaterialpropertydrawer",
+  "version": "1.0.0",
+  "displayName": "UberMaterialPropertyDrawer",
+  "description": "This package extends material property drawer.",
+  "unity": "2022.3",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "author": {
+    "name": "HarukaKajita"
+  }
+}
