@@ -11,7 +11,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private int _channelNum = 1;
         private int _resolution = 256;
         private bool _accumulate = false;
-        private bool _half = false;
+        private bool _useHalfTexture = false;
 
         public CurveTextureDrawer(string groupName, string[] args)
         {
@@ -29,7 +29,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 }
                 else if (argStr.StartsWith("bit"))
                 {
-                    this._half = int.Parse(argStr[3..]) == 16;
+                    this._useHalfTexture = int.Parse(argStr[3..]) == 16;
                 }else if (argStr == "accum")
                 {
                     this._accumulate = true;
@@ -148,12 +148,26 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private Texture2D BakeTexture(CurveTextureData data)
         {
-            var format = _half ? TextureFormat.RGBAHalf : TextureFormat.RGBA32;
-            
+            TextureFormat format = TextureFormat.ARGB32;
+            if (_useHalfTexture)
+            {
+                if(_channelNum == 1) format = TextureFormat.RHalf;
+                else if (_channelNum == 2) format = TextureFormat.RGHalf;
+                else if (_channelNum == 3) format = TextureFormat.RGBAHalf;
+                else if (_channelNum == 4) format = TextureFormat.RGBAHalf;
+            }
+            else
+            {
+                if (_channelNum == 1) format = TextureFormat.R8;
+                else if (_channelNum == 2) format = TextureFormat.RG16;
+                else if (_channelNum == 3) format = TextureFormat.RGB24;
+                else if (_channelNum == 4) format = TextureFormat.RGBA32;
+            }
+
             var tex = data.texture;
             if (tex == null || tex.width != _resolution || tex.format != format)
             {
-                tex = new Texture2D(_resolution, 1, format, false, true);
+                tex = new Texture2D(_resolution, 1, format, true, true);
             }
 
             float accR = 0, accG = 0, accB = 0, accA = 0;
@@ -172,7 +186,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     accB += b; b = accB;
                     accA += a; a = accA;
                 }
-                if (!_half)
+                if (!_useHalfTexture)
                 {
                     r = Mathf.Clamp01(r);
                     g = Mathf.Clamp01(g);
