@@ -43,7 +43,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             propertyHeight += EditorGUIUtility.singleLineHeight;
             interval += 2;
             // textureHeight
-            propertyHeight += Constants.TexturePropertyHeight;
+            propertyHeight += GUIHelper.TexturePropertyHeight;
             interval += 2;
             // tilingOffsetHeight
             propertyHeight += EditorGUIUtility.singleLineHeight*2f+2;
@@ -87,7 +87,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             
             // Texture GUI
             EditorGUI.BeginDisabledGroup(true);
-            var textureRect = new Rect(line.x, line.y, line.width, Constants.TexturePropertyHeight);
+            var textureRect = new Rect(line.x, line.y, line.width, GUIHelper.TexturePropertyHeight);
             editor.TextureProperty(textureRect, prop, label.text, false);
             EditorGUI.EndDisabledGroup();
             // EditorGUI.DrawRect(textureRect, new Color(1, 1, 1, 0.2f));
@@ -95,7 +95,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             textureRect.y += 2;
             
             // Tiling Offset GUI
-            var totalIndentSize = EditorGUI.indentLevel * Constants.IndentWidth;
+            var totalIndentSize = EditorGUI.indentLevel * GUIHelper.IndentWidth;
             var x = textureRect.x + totalIndentSize;
             var width = textureRect.width - totalIndentSize;
             var tilingOffsetRect = new Rect(x, textureRect.y, width, EditorGUIUtility.singleLineHeight*2+2);
