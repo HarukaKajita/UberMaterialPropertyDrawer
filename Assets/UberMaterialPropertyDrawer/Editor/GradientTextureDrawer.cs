@@ -37,9 +37,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (!UberDrawer.GetGroupExpanded(_groupName))
                 return -2;
-            var gradientHeight = EditorGUIUtility.singleLineHeight;
-            var textureHeight = EditorGUIUtility.singleLineHeight * 3.8f;
-            return gradientHeight + textureHeight + 4;
+            var propertyHeight = 0f;
+            var interval = 0f;
+            // gradientHeight
+            propertyHeight += EditorGUIUtility.singleLineHeight;
+            interval += 2;
+            // textureHeight
+            propertyHeight += Constants.TexturePropertyHeight;
+            interval += 2;
+            // tilingOffsetHeight
+            propertyHeight += EditorGUIUtility.singleLineHeight*2f+2;
+            interval += 2;
+            return propertyHeight + interval;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -56,40 +65,57 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (mat == null) return;
 
             var path = AssetDatabase.GetAssetPath(mat);
-            var subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            var subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
             var dataName = prop.name + "_GradientData";
-            var data = subAssets.OfType<GradientTextureData>().FirstOrDefault(a => a.name == dataName);
+            var data = subAssetsInMat.OfType<GradientTextureData>().FirstOrDefault(a => a.name == dataName);
             if (data == null)
             {
                 data = ScriptableObject.CreateInstance<GradientTextureData>();
                 data.name = dataName;
                 AssetDatabase.AddObjectToAsset(data, mat);
                 AssetDatabase.ImportAsset(path);
-                subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+                subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
             }
 
             EditorGUI.BeginChangeCheck();
+            
+            // Gradient GUI
             var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
             data.gradient = EditorGUI.GradientField(line, label.text, data.gradient);
-            line.y += line.height + 2;
-
+            line.y += EditorGUIUtility.singleLineHeight;
+            line.y += 2;
+            
+            // Texture GUI
             EditorGUI.BeginDisabledGroup(true);
-            editor.TextureProperty(line, prop, label.text, false);
+            var textureRect = new Rect(line.x, line.y, line.width, Constants.TexturePropertyHeight);
+            editor.TextureProperty(textureRect, prop, label.text, false);
             EditorGUI.EndDisabledGroup();
+            // EditorGUI.DrawRect(textureRect, new Color(1, 1, 1, 0.2f));
+            textureRect.y += textureRect.height;
+            textureRect.y += 2;
+            
+            // Tiling Offset GUI
+            var totalIndentSize = EditorGUI.indentLevel * Constants.IndentWidth;
+            var x = textureRect.x + totalIndentSize;
+            var width = textureRect.width - totalIndentSize;
+            var tilingOffsetRect = new Rect(x, textureRect.y, width, EditorGUIUtility.singleLineHeight*2+2);
+            editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
+            tilingOffsetRect.y += tilingOffsetRect.height;
+            tilingOffsetRect.y += 2;
 
             if (EditorGUI.EndChangeCheck())
             {
                 var tex = BakeTexture(data);
                 tex.name = prop.name + "_GradientTex";
-                if (!subAssets.Contains(tex))
+                if (!subAssetsInMat.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
-                AssetDatabase.ImportAsset(path);
                 data.texture = tex;
                 prop.textureValue = tex;
+                // AssetDatabase.ImportAsset(path);
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(tex);
                 EditorUtility.SetDirty(mat);
-                AssetDatabase.SaveAssets();
+                // AssetDatabase.SaveAssets();
             }
 
             if (prop.textureValue != data.texture && data.texture != null)
@@ -108,9 +134,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var format = _half ? TextureFormat.RGBAHalf : TextureFormat.RGBA32;
             var tex = data.texture;
             if (tex == null || tex.width != _resolution || tex.format != format)
-            {
-                tex = new Texture2D(_resolution, 1, format, false, true);
-            }
+                tex = new Texture2D(_resolution, 1, format, true, true);
 
             var colors = new Color[_resolution];
             for (int i = 0; i < _resolution; i++)

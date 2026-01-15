@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    public class CurveTextureData : ScriptableObject
+    internal class CurveTextureData : ScriptableObject
     {
         public AnimationCurve curveR = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveG = AnimationCurve.Linear(0, 0, 1, 1);

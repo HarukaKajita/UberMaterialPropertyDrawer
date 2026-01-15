@@ -43,8 +43,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return -2;
             
             var curveHeight = EditorGUIUtility.singleLineHeight * 4f;
-            var textureHeight = EditorGUIUtility.singleLineHeight * 3.8f;// 多分サイズあってそう
-            return curveHeight + textureHeight + 4;
+            var textureHeight = Constants.TexturePropertyHeight;
+            var tilingOffsetHeight = EditorGUIUtility.singleLineHeight*2f+2;
+            var interval = 12f;
+            return curveHeight + textureHeight + tilingOffsetHeight + interval;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -75,6 +77,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             EditorGUI.BeginChangeCheck();
             var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            // curve GUI
             data.curveR = EditorGUI.CurveField(line, "R", data.curveR);
             line.y += line.height;
             data.curveG = EditorGUI.CurveField(line, "G", data.curveG);
@@ -82,11 +85,23 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             data.curveB = EditorGUI.CurveField(line, "B", data.curveB);
             line.y += line.height;
             data.curveA = EditorGUI.CurveField(line, "A", data.curveA);
-            line.y += line.height + 2;
+            line.y += line.height;
 
+            // texture GUI
             EditorGUI.BeginDisabledGroup(true);
             editor.TextureProperty(line, prop, label.text, false);
             EditorGUI.EndDisabledGroup();
+            line.y += Constants.TexturePropertyHeight;
+            line.y += 2;
+            
+            // Tiling Offset GUI
+            var totalIndentSize = EditorGUI.indentLevel * Constants.IndentWidth;
+            var x = line.x + totalIndentSize;
+            var width = line.width - totalIndentSize;
+            var tilingOffsetRect = new Rect(x, line.y, width, EditorGUIUtility.singleLineHeight*2+2);
+            editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
+            tilingOffsetRect.y += tilingOffsetRect.height;
+            tilingOffsetRect.y += 2;
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -94,13 +109,13 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 tex.name = prop.name + "_CurveTex";
                 if (!subAssets.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
-                AssetDatabase.ImportAsset(path);
                 data.texture = tex;
                 prop.textureValue = tex;
+                // AssetDatabase.ImportAsset(path);
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(tex);
                 EditorUtility.SetDirty(mat);
-                AssetDatabase.SaveAssets();
+                // AssetDatabase.SaveAssets();
             }
 
             if (prop.textureValue != data.texture && data.texture != null)
