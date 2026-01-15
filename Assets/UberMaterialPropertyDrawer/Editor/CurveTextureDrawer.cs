@@ -41,12 +41,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (!UberDrawer.GetGroupExpanded(_groupName))
                 return -2;
-            
-            var curveHeight = EditorGUIUtility.singleLineHeight * 4f;
-            var textureHeight = Constants.TexturePropertyHeight;
-            var tilingOffsetHeight = EditorGUIUtility.singleLineHeight*2f+2;
-            var interval = 12f;
-            return curveHeight + textureHeight + tilingOffsetHeight + interval;
+            var textureHeight = GUIHelper.TexturePropertyHeight;
+            var interval = 2f;
+            return textureHeight + interval;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -76,29 +73,49 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
 
             EditorGUI.BeginChangeCheck();
-            var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            
+            //Label GUI
+            var indentSize = GUIHelper.IndentWidth;
+            // EditorGUI.DrawRect(
+            //     new Rect(GUIHelper.Indent(position, true)),
+            //     new Color(1, 1, 1, 0.2f)
+            //     );
+            var propName = ObjectNames.NicifyVariableName(label.text);
+            var labelWidth = position.width * 0.3f;
+            var labelRect = new Rect(position.x, position.y, labelWidth, EditorGUIUtility.singleLineHeight);
+            EditorGUI.LabelField(labelRect, propName);
+            
+            var valueWidth = position.width - labelRect.width + indentSize*2;
+            var valueX = labelRect.width;
+            // var valueRect = new Rect(valueX, position.y, valueWidth, position.height);
+            // EditorGUI.DrawRect(EditorGUI.IndentedRect(labelRect), new Color(1, 0, 0, 0.2f));
+            // EditorGUI.DrawRect(EditorGUI.IndentedRect(valueRect), new Color(0, 0, 1, 0.2f));
             // curve GUI
-            data.curveR = EditorGUI.CurveField(line, "R", data.curveR);
-            line.y += line.height;
-            data.curveG = EditorGUI.CurveField(line, "G", data.curveG);
-            line.y += line.height;
-            data.curveB = EditorGUI.CurveField(line, "B", data.curveB);
-            line.y += line.height;
-            data.curveA = EditorGUI.CurveField(line, "A", data.curveA);
-            line.y += line.height;
-
+            var curveRect = new Rect(valueX, position.y, valueWidth/4, GUIHelper.TexturePropertyHeight/4);
+            
+            data.curveR = EditorGUI.CurveField(curveRect, "", data.curveR);
+            curveRect.y += curveRect.height;
+            data.curveG = EditorGUI.CurveField(curveRect, "", data.curveG);
+            curveRect.y += curveRect.height;
+            data.curveB = EditorGUI.CurveField(curveRect, "", data.curveB);
+            curveRect.y += curveRect.height;
+            data.curveA = EditorGUI.CurveField(curveRect, "", data.curveA);
+            curveRect.y += curveRect.height;
+            
             // texture GUI
             EditorGUI.BeginDisabledGroup(true);
-            editor.TextureProperty(line, prop, label.text, false);
+            var textureY = position.y;
+            var textureWidth = GUIHelper.TexturePropertyHeight;
+            var textureRect = new Rect(curveRect.xMax + 2, textureY, textureWidth, textureWidth);
+            editor.TextureProperty(textureRect, prop, "", false);
             EditorGUI.EndDisabledGroup();
-            line.y += Constants.TexturePropertyHeight;
-            line.y += 2;
             
             // Tiling Offset GUI
-            var totalIndentSize = EditorGUI.indentLevel * Constants.IndentWidth;
-            var x = line.x + totalIndentSize;
-            var width = line.width - totalIndentSize;
-            var tilingOffsetRect = new Rect(x, line.y, width, EditorGUIUtility.singleLineHeight*2+2);
+            var tillingOffsetHeight = GUIHelper.TillingOffsetPropertyHeight;
+            var tillingOffsetY = position.y + (curveRect.height*4 - tillingOffsetHeight)/2;
+            var tillingOffsetX = textureRect.xMax+2;
+            var width = valueWidth-curveRect.width-textureWidth;
+            var tilingOffsetRect = new Rect(tillingOffsetX, tillingOffsetY, width, tillingOffsetHeight);
             editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
             tilingOffsetRect.y += tilingOffsetRect.height;
             tilingOffsetRect.y += 2;
@@ -111,10 +128,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
                 prop.textureValue = tex;
-                // AssetDatabase.ImportAsset(path);
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(tex);
                 EditorUtility.SetDirty(mat);
+                // AssetDatabase.ImportAsset(path);
                 // AssetDatabase.SaveAssets();
             }
 
