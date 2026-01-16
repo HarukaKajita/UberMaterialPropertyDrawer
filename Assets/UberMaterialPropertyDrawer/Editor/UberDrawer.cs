@@ -58,6 +58,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6, string kw7, string kw8) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6, kw7, kw8 }) {}
         public UberDrawer(string groupName, string drawer, string kw1, string kw2, string kw3, string kw4, string kw5, string kw6, string kw7, string kw8, string kw9) : this(groupName, drawer, new[] { kw1, kw2, kw3, kw4, kw5, kw6, kw7, kw8, kw9 }) {}
 
+        // (groupName, drawer, string, float, string, float, ...)
+        public UberDrawer(string groupName, string drawer,string kw1,float id1) : this(groupName, drawer, new[] { kw1 }, new []{ id1 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2) : this(groupName, drawer, new[] { kw1,kw2 }, new []{ id1,id2 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2,string kw3,float id3) : this(groupName, drawer, new[] { kw1,kw2,kw3 }, new []{ id1,id2,id3 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2,string kw3,float id3,string kw4,float id4) : this(groupName, drawer, new[] { kw1,kw2,kw3,kw4 }, new []{ id1,id2,id3,id4 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2,string kw3,float id3,string kw4,float id4,string kw5,float id5) : this(groupName, drawer, new[] { kw1,kw2,kw3,kw4,kw5 }, new []{ id1,id2,id3,id4,id5 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2,string kw3,float id3,string kw4,float id4,string kw5,float id5,string kw6,float id6) : this(groupName, drawer, new[] { kw1,kw2,kw3,kw4,kw5,kw6 }, new []{ id1,id2,id3,id4,id5,id6 }) {}
+        public UberDrawer(string groupName, string drawer,string kw1,float id1,string kw2,float id2,string kw3,float id3,string kw4,float id4,string kw5,float id5,string kw6,float id6,string kw7,float id7) : this(groupName, drawer, new[] { kw1,kw2,kw3,kw4,kw5,kw6,kw7 }, new []{ id1,id2,id3,id4,id5,id6,id7 }) {}
         public UberDrawer(string groupName, string drawer, params string[] args)
         {
             this._groupName = groupName;
@@ -76,10 +84,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             else if (drawer == "Enum")
             {
                 // 要素数が1ならEnumのクラス名指定
-                if(args.Length == 1)
+                if (args.Length == 1)
                     this._propertyDrawer = new UberEnumDrawer(groupName, args[0]);
                 else //要素数が2以上（2の倍数）なら名前と値の組を直接記述している
-                    this._propertyDrawer = new UberEnumDrawer(groupName, args);
+                    Debug.LogError("[Uber(*,Enum,...) attribute's args is wrong");
             }
             else if (drawer == "ResetGroup")        
             {
@@ -92,6 +100,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             this._groupName = groupName;
             this._drawer = drawer;
+            this._propertyDrawer = null;
             if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, enumNames, vals);
         }
 

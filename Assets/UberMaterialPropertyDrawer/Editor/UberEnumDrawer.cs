@@ -36,21 +36,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
         }
 
-        public UberEnumDrawer(string groupName, params string[] args)
-        {
-            this._groupName = groupName;
-            var enumNames = args.Where((x, i) => i % 2 == 0).ToArray();
-            var vals = args.Where((x, i) => i % 2 == 1).Select(int.Parse).ToArray();
-            
-            this.names = new GUIContent[enumNames.Length];
-            for (int i = 0; i < enumNames.Length; ++i)
-                this.names[i] = new GUIContent(enumNames[i]);
-
-            values = new int[vals.Length];
-            for (int i = 0; i < vals.Length; ++i)
-                values[i] = (int)vals[i];
-        }
-
         // name,value,name,value,... pairs: explicit names & values
         public UberEnumDrawer(string groupName, string n1, float v1) : this(groupName, new[] { n1 }, new[] { v1 })
         {
@@ -144,7 +129,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
                 var selIndex = EditorGUI.Popup(position, label, selectedIndex, names);
                 EditorGUI.showMixedValue = false;
-                prop.floatValue = (float)values[selIndex];
+                if(prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
+                    prop.floatValue = values[selIndex];
+                else if(prop.type == MaterialProperty.PropType.Int)
+                    prop.intValue = values[selIndex];
             }
             else
             {
