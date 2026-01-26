@@ -60,12 +60,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 e.Use();
             }
 
-            prop.floatValue = EditorGUI.Toggle(new Rect(position.x + 2 + indentOffset, position.y + 0.5f, 18, 18),
-                prop.floatValue == 1.0)
-                ? 1
-                : 0;
-            EditorGUI.LabelField(new Rect(position.x + 20f + indentOffset, position.y, 300, 18),
-                this._groupName + ":" + _memo, EditorStyles.boldLabel);
+            var toggleState = prop.intValue != 0;
+            if(prop.type == MaterialProperty.PropType.Float)
+                toggleState = prop.floatValue != 0;
+            
+            toggleState = EditorGUI.Toggle(new Rect(position.x + 2 + indentOffset, position.y + 0.5f, 18, 18), toggleState);
+            
+            if(prop.type == MaterialProperty.PropType.Int)
+                prop.intValue = toggleState ? 1 : 0;
+            else if(prop.type == MaterialProperty.PropType.Float)
+                prop.floatValue = toggleState ? 1 : 0;
+            
+            EditorGUI.LabelField(new Rect(position.x + 20f + indentOffset, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
             return expanded;
         }
     }
