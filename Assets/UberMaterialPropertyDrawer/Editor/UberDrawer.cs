@@ -151,7 +151,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
         
         // グループが開かれた描画状態になっているかどうかのboolを返す
-        internal static bool GetGroupExpanded(string groupName)
+        public static bool GetGroupExpanded(string groupName)
         {
             if (GroupExpanded.TryGetValue(groupName, out var expanded))
             {
