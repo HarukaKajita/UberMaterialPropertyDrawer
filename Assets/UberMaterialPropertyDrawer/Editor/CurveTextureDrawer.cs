@@ -20,22 +20,17 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             foreach (var argStr in args)
             {
                 if (argStr.StartsWith("ch"))
-                {
                     this._channelNum = int.Parse(argStr[2..]);
-                }
                 else if (argStr.StartsWith("res"))
-                {
                     this._resolution = int.Parse(argStr[3..]);
-                }
                 else if (argStr.StartsWith("bit"))
-                {
                     this._useHalfTexture = int.Parse(argStr[3..]) == 16;
-                }else if (argStr == "accum")
-                {
+                else if (argStr == "accum")
                     this._accumulate = true;
-                }
             }
         }
+        
+        private string CurveTexName(MaterialProperty prop) => prop.name + "_CurveTex";
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
@@ -72,14 +67,20 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
             }
 
+            if (data.texture == null && prop.textureValue != null)
+            {
+                var texName = CurveTexName(prop);
+                var subAssetTex = subAssets.OfType<Texture2D>().FirstOrDefault(a => a.name == texName);
+                data.texture = subAssetTex;
+                prop.textureValue = subAssetTex;
+                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(mat);
+            }
+
             EditorGUI.BeginChangeCheck();
             
             //Label GUI
             var indentSize = GUIHelper.IndentWidth;
-            // EditorGUI.DrawRect(
-            //     new Rect(GUIHelper.Indent(position, true)),
-            //     new Color(1, 1, 1, 0.2f)
-            //     );
             var propName = ObjectNames.NicifyVariableName(label.text);
             var labelWidth = position.width * 0.3f;
             var labelRect = new Rect(position.x, position.y, labelWidth, EditorGUIUtility.singleLineHeight);
@@ -87,9 +88,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             
             var valueWidth = position.width - labelRect.width + indentSize*2;
             var valueX = labelRect.width;
-            // var valueRect = new Rect(valueX, position.y, valueWidth, position.height);
-            // EditorGUI.DrawRect(EditorGUI.IndentedRect(labelRect), new Color(1, 0, 0, 0.2f));
-            // EditorGUI.DrawRect(EditorGUI.IndentedRect(valueRect), new Color(0, 0, 1, 0.2f));
             // curve GUI
             var curveRect = new Rect(valueX, position.y, valueWidth/4, GUIHelper.TexturePropertyHeight/4);
             
@@ -120,10 +118,13 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             tilingOffsetRect.y += tilingOffsetRect.height;
             tilingOffsetRect.y += 2;
 
-            if (EditorGUI.EndChangeCheck())
+            // When changed shader lab property attribute value.(ex: resolution, channel num, bit)
+            var isChangedTextureSettings = IsChangedTextureSettings(data);
+            
+            if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
                 var tex = BakeTexture(data);
-                tex.name = prop.name + "_CurveTex";
+                tex.name = CurveTexName(prop);
                 if (!subAssets.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
@@ -135,20 +136,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 // AssetDatabase.SaveAssets();
             }
 
-            if (prop.textureValue != data.texture && data.texture != null)
+            if (data.texture != null && prop.textureValue != data.texture)
             {
-                AssetDatabase.RemoveObjectFromAsset(data.texture);
-                Object.DestroyImmediate(data.texture, true);
-                data.texture = null;
-                EditorUtility.SetDirty(data);
-                AssetDatabase.ImportAsset(path);
-                AssetDatabase.SaveAssets();
+                prop.textureValue = data.texture;
+                EditorUtility.SetDirty(mat);
             }
         }
-
-        private Texture2D BakeTexture(CurveTextureData data)
+        
+        private TextureFormat PickCorrectTextureFormat()
         {
-            TextureFormat format = TextureFormat.ARGB32;
+            var format = TextureFormat.RGBA32;
             if (_useHalfTexture)
             {
                 if(_channelNum == 1) format = TextureFormat.RHalf;
@@ -163,12 +160,24 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 else if (_channelNum == 3) format = TextureFormat.RGB24;
                 else if (_channelNum == 4) format = TextureFormat.RGBA32;
             }
+            return format;
+        }
+        
+        private bool IsChangedTextureSettings(CurveTextureData data)
+        {
+            var format = PickCorrectTextureFormat();
+            return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
+        }
+
+        private Texture2D BakeTexture(CurveTextureData data)
+        {
+            var format = PickCorrectTextureFormat();
 
             var tex = data.texture;
-            if (tex == null || tex.width != _resolution || tex.format != format)
-            {
+            if (tex == null)
                 tex = new Texture2D(_resolution, 1, format, true, true);
-            }
+            else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
+                tex.Reinitialize(_resolution, 1, format, true);
 
             float accR = 0, accG = 0, accB = 0, accA = 0;
             var colors = new Color[_resolution];

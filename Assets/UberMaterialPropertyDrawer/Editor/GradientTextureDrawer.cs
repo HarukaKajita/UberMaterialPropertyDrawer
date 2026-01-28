@@ -10,7 +10,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private int _channelNum = 1;
         private int _resolution = 256;
-        private bool _half = false;
+        private bool _useHalfTexture = false;
 
         public GradientTextureDrawer(string groupName, string[] args)
         {
@@ -19,25 +19,21 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             foreach (var argStr in args)
             {
                 if (argStr.StartsWith("ch"))
-                {
                     this._channelNum = int.Parse(argStr[2..]);
-                }
                 else if (argStr.StartsWith("res"))
-                {
                     this._resolution = int.Parse(argStr[3..]);
-                }
                 else if (argStr.StartsWith("bit"))
-                {
-                    this._half = int.Parse(argStr[3..]) == 16;
-                }
+                    this._useHalfTexture = int.Parse(argStr[3..]) == 16;
             }
         }
+        
+        private string GradientTexName(MaterialProperty prop) => prop.name + "_GradientTex";
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             if (!UberDrawer.GetGroupExpanded(_groupName))
                 return -2;
-            var propertyHeight =GUIHelper.TexturePropertyHeight;
+            var propertyHeight = GUIHelper.TexturePropertyHeight;
             var interval = 2;
             return propertyHeight + interval;
         }
@@ -66,6 +62,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 AssetDatabase.AddObjectToAsset(data, mat);
                 AssetDatabase.ImportAsset(path);
                 subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
+            }
+
+            if (data.texture == null && prop.textureValue != null)
+            {
+                var texName = GradientTexName(prop);
+                var subAssetTex = subAssetsInMat.OfType<Texture2D>().FirstOrDefault(a => a.name == texName);
+                data.texture = subAssetTex;
+                prop.textureValue = subAssetTex;
+                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(mat);
             }
 
             EditorGUI.BeginChangeCheck();
@@ -99,10 +105,13 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var tilingOffsetRect = new Rect(tillingOffsetX, tillingOffsetY, width, tillingOffsetHeight);
             editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
 
-            if (EditorGUI.EndChangeCheck())
+            // When changed shader lab property attribute value.(ex: resolution, channel num, bit)
+            var isChangedTextureSettings = IsChangedTextureSettings(data);
+            
+            if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
                 var tex = BakeTexture(data);
-                tex.name = prop.name + "_GradientTex";
+                tex.name = GradientTexName(prop);
                 if (!subAssetsInMat.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
@@ -114,23 +123,47 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 // AssetDatabase.SaveAssets();
             }
 
-            if (prop.textureValue != data.texture && data.texture != null)
+            if (data.texture != null && prop.textureValue != data.texture)
             {
-                AssetDatabase.RemoveObjectFromAsset(data.texture);
-                Object.DestroyImmediate(data.texture, true);
-                data.texture = null;
-                EditorUtility.SetDirty(data);
-                AssetDatabase.ImportAsset(path);
-                AssetDatabase.SaveAssets();
+                prop.textureValue = data.texture;
+                EditorUtility.SetDirty(mat);
             }
+        }
+
+        private TextureFormat PickCorrectTextureFormat()
+        {
+            var format = TextureFormat.RGBA32;
+            if (_useHalfTexture)
+            {
+                if(_channelNum == 1) format = TextureFormat.RHalf;
+                else if (_channelNum == 2) format = TextureFormat.RGHalf;
+                else if (_channelNum == 3) format = TextureFormat.RGBAHalf;
+                else if (_channelNum == 4) format = TextureFormat.RGBAHalf;
+            }
+            else
+            {
+                if (_channelNum == 1) format = TextureFormat.R8;
+                else if (_channelNum == 2) format = TextureFormat.RG16;
+                else if (_channelNum == 3) format = TextureFormat.RGB24;
+                else if (_channelNum == 4) format = TextureFormat.RGBA32;
+            }
+            return format;
+        }
+        private bool IsChangedTextureSettings(GradientTextureData data)
+        {
+            var format = PickCorrectTextureFormat();
+            return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
         }
 
         private Texture2D BakeTexture(GradientTextureData data)
         {
-            var format = _half ? TextureFormat.RGBAHalf : TextureFormat.RGBA32;
+            var format = PickCorrectTextureFormat();
+                
             var tex = data.texture;
-            if (tex == null || tex.width != _resolution || tex.format != format)
+            if (tex == null)
                 tex = new Texture2D(_resolution, 1, format, true, true);
+            else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
+                tex.Reinitialize(_resolution, 1, format, true);
 
             var colors = new Color[_resolution];
             for (int i = 0; i < _resolution; i++)
