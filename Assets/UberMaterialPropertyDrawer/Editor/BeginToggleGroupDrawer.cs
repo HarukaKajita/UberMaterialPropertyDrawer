@@ -50,28 +50,38 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             style.fixedHeight = 22; //背景の高さ
             position.y += 6;
             var indentOffset = GUIHelper.IndentWidth * _indentNum;
-            var bgRect = new Rect(position.x + indentOffset, position.y, position.width, style.fixedHeight);
+            var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset, style.fixedHeight);
             GUI.Box(bgRect, "", style); //背景
-            var interactiveRect = new Rect(bgRect.x + 20 + indentOffset, bgRect.y, bgRect.width, bgRect.height);
-            var e = Event.current;
-            if (e.type == EventType.MouseDown && interactiveRect.Contains(e.mousePosition))
-            {
-                expanded = !expanded;
-                e.Use();
-            }
-
+            var buttonWidth = 18;
+            var buttonLeftMargin = 2;
             var toggleState = prop.intValue != 0;
-            if(prop.type == MaterialProperty.PropType.Float)
+            
+            if(prop.type == MaterialProperty.PropType.Int)
+                toggleState = prop.intValue != 0;
+            else if(prop.type == MaterialProperty.PropType.Float)
                 toggleState = prop.floatValue != 0;
             
-            toggleState = EditorGUI.Toggle(new Rect(position.x + 2 + indentOffset, position.y + 0.5f, 18, 18), toggleState);
+            // toggleState = EditorGUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState);
+            toggleState = GUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState, "");
             
             if(prop.type == MaterialProperty.PropType.Int)
                 prop.intValue = toggleState ? 1 : 0;
             else if(prop.type == MaterialProperty.PropType.Float)
                 prop.floatValue = toggleState ? 1 : 0;
             
-            EditorGUI.LabelField(new Rect(position.x + 20f + indentOffset, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
+            // Group Name Label
+            EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
+            
+            // Clickable Area
+            var interactiveRect = bgRect;
+            interactiveRect.x += buttonWidth + buttonLeftMargin;
+            interactiveRect.width -= buttonWidth + buttonLeftMargin;
+            var e = Event.current;
+            if (e.type == EventType.MouseDown && interactiveRect.Contains(e.mousePosition))
+            {
+                expanded = !expanded;
+                e.Use();
+            }
             return expanded;
         }
     }
