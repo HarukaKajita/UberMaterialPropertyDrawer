@@ -28,17 +28,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = prop.hasMixedValue;
-            var toggleValue = EditorGUI.Toggle(position, propName, prop.floatValue == 1);
+
+            var toggleValue = Util.ToBool(prop);
+            
+            toggleValue = EditorGUI.Toggle(position, propName, toggleValue);
             EditorGUI.showMixedValue = false;
 
             if (EditorGUI.EndChangeCheck())
-            {
-                if(prop.type == MaterialProperty.PropType.Int)
-                    prop.intValue = toggleValue ? 1 : 0;
-                else if(prop.type == MaterialProperty.PropType.Float)
-                    prop.floatValue = toggleValue ? 1 : 0;
-            }
-                
+                Util.SetBool(prop, toggleValue);
         }
     }
 }

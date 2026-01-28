@@ -50,24 +50,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             style.fixedHeight = 22; //背景の高さ
             position.y += 6;
             var indentOffset = GUIHelper.IndentWidth * _indentNum;
+            // Group header
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset, style.fixedHeight);
             GUI.Box(bgRect, "", style); //背景
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
-            var toggleState = prop.intValue != 0;
             
-            if(prop.type == MaterialProperty.PropType.Int)
-                toggleState = prop.intValue != 0;
-            else if(prop.type == MaterialProperty.PropType.Float)
-                toggleState = prop.floatValue != 0;
-            
+            var toggleState = Util.ToBool(prop);
             // toggleState = EditorGUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState);
             toggleState = GUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState, "");
-            
-            if(prop.type == MaterialProperty.PropType.Int)
-                prop.intValue = toggleState ? 1 : 0;
-            else if(prop.type == MaterialProperty.PropType.Float)
-                prop.floatValue = toggleState ? 1 : 0;
+            Util.SetBool(prop, toggleState);
             
             // Group Name Label
             EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
