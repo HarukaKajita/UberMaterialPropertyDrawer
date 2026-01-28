@@ -10,6 +10,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private readonly string _groupName = "";
         private readonly GUIContent[] names;
         private readonly int[] values;
+        private readonly string _errorLabel = null;
 
         public UberEnumDrawer(string groupName, string enumName)
         {
@@ -31,8 +32,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
             catch (Exception)
             {
-                UberDrawerLogger.LogWarning($"Failed to create MaterialEnum, enum {enumName} not found");
-                throw;
+                _errorLabel = $"Failed to create MaterialEnum, enum {enumName} not found";
+                UberDrawerLogger.LogError(_errorLabel);
+                names = Array.Empty<GUIContent>();
+                values = Array.Empty<int>();
             }
         }
 
@@ -108,6 +111,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 GUIContent c = new GUIContent("Enum used on a non-float property: " + prop.name);
                 EditorGUI.LabelField(position, c, EditorStyles.helpBox);
+                return;
+            }
+
+            if (names.Length == 0)
+            {
+                EditorGUI.LabelField(position, _errorLabel);
                 return;
             }
 
