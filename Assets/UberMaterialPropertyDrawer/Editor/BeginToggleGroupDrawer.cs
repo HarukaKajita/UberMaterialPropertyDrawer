@@ -25,7 +25,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             var parentIsClosed = ParentIsClosed();
-            UberDrawerLogger.Log("GetPropertyHeight Begin : " + GroupName);
             UberDrawerLogger.Log(GroupName + "のParent" + _parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
             if (parentIsClosed) return GUIHelper.ClosedHeight;
             return GUIHelper.GroupHeaderHeight;
