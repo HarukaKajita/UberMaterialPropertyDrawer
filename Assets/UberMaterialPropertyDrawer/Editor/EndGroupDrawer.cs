@@ -3,11 +3,16 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("EndGroup")]
     public class EndGroupDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
         private readonly int _indentNum = 0;
         private readonly string _memo;
+
+        public EndGroupDrawer(UberDrawerContext context) : this(context.GroupName, context.GroupStack)
+        {
+        }
 
         public EndGroupDrawer(string groupName, string memo = "")
         {

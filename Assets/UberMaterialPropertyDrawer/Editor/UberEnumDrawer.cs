@@ -5,12 +5,64 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("Enum")]
     public class UberEnumDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
         private readonly GUIContent[] names;
         private readonly int[] values;
         private readonly string _errorLabel = null;
+
+        public UberEnumDrawer(UberDrawerContext context)
+        {
+            this._groupName = context.GroupName;
+
+            if (context.EnumNames != null && context.EnumValues != null)
+            {
+                this.names = new GUIContent[context.EnumNames.Length];
+                for (int i = 0; i < context.EnumNames.Length; ++i)
+                    this.names[i] = new GUIContent(context.EnumNames[i]);
+
+                values = new int[context.EnumValues.Length];
+                for (int i = 0; i < context.EnumValues.Length; ++i)
+                    values[i] = (int)context.EnumValues[i];
+
+                return;
+            }
+
+            if (context.Args.Length == 1)
+            {
+                var enumName = context.Args[0];
+                var loadedTypes = TypeCache.GetTypesDerivedFrom(typeof(Enum));
+                try
+                {
+                    var enumType = loadedTypes.FirstOrDefault(x => x.Name == enumName || x.FullName == enumName);
+                    var enumNames = Enum.GetNames(enumType);
+                    this.names = new GUIContent[enumNames.Length];
+                    for (int i = 0; i < enumNames.Length; ++i)
+                        this.names[i] = new GUIContent(enumNames[i]);
+
+                    var enumVals = Enum.GetValues(enumType);
+                    values = new int[enumVals.Length];
+                    for (var i = 0; i < enumVals.Length; ++i)
+                        values[i] = (int)enumVals.GetValue(i);
+                    return;
+                }
+                catch (Exception)
+                {
+                    _errorLabel = $"Failed to create MaterialEnum, enum {enumName} not found";
+                    UberDrawerLogger.LogError(_errorLabel);
+                    names = Array.Empty<GUIContent>();
+                    values = Array.Empty<int>();
+                    return;
+                }
+            }
+
+            _errorLabel = "Failed to create MaterialEnum, args are invalid";
+            UberDrawerLogger.LogError(_errorLabel);
+            names = Array.Empty<GUIContent>();
+            values = Array.Empty<int>();
+        }
 
         public UberEnumDrawer(string groupName, string enumName)
         {

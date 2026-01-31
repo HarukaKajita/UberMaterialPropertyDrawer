@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("GradientTexture")]
     public class GradientTextureDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
@@ -11,6 +12,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private int _channelNum = 1;
         private int _resolution = 256;
         private bool _useHalfTexture = false;
+
+        public GradientTextureDrawer(UberDrawerContext context) : this(context.GroupName, context.Args)
+        {
+        }
 
         public GradientTextureDrawer(string groupName, string[] args)
         {

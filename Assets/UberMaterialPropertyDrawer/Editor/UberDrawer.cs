@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,6 +45,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private readonly string _arg0 = null;
         private static readonly Dictionary<string, bool> GroupExpanded = new();
         private static readonly Stack<string> GroupNest = new();
+        private static readonly Dictionary<string, ConstructorInfo> DrawerConstructors = new(StringComparer.Ordinal);
+        private static bool _registryInitialized = false;
         private readonly MaterialPropertyDrawer _propertyDrawer;
 
         public UberDrawer(string groupName) : this(groupName, null, Array.Empty<string>()) {}
@@ -70,38 +73,99 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             this._groupName = groupName;
             this._drawer = drawer;
-            this._propertyDrawer = null;
-            var existParent = GroupNest.TryPeek(out var parentGroup);
-            parentGroup = existParent ? parentGroup : "";
-            if (drawer == "BeginToggleGroup") this._propertyDrawer = new BeginToggleGroupDrawer(groupName, parentGroup);
-            else if (drawer == "EndGroup")    this._propertyDrawer = new EndGroupDrawer(groupName, GroupStr());
-            else if (drawer == "BeginGroup")  this._propertyDrawer = new BeginGroupDrawer(groupName, parentGroup);
-            else if (drawer == "Vector2")     this._propertyDrawer = new Vector2Drawer(groupName);
-            else if (drawer == "Vector3")     this._propertyDrawer = new Vector3Drawer(groupName);
-            else if (drawer == "ToggleUI")    this._propertyDrawer = new UberToggleDrawer(groupName);
-            else if (drawer == "CurveTexture") this._propertyDrawer = new CurveTextureDrawer(groupName, args);
-            else if (drawer == "GradientTexture") this._propertyDrawer = new GradientTextureDrawer(groupName, args);
-            else if (drawer == "Enum")
-            {
-                // 要素数が1ならEnumのクラス名指定
-                if (args.Length == 1)
-                    this._propertyDrawer = new UberEnumDrawer(groupName, args[0]);
-                else //要素数が2以上（2の倍数）なら名前と値の組を直接記述している
-                    Debug.LogError("[Uber(*,Enum,...) attribute's args is wrong");
-            }
-            else if (drawer == "ResetGroup")        
-            {
-                GroupExpanded.Clear();
-                GroupNest.Clear();
-            }
+            var context = CreateContext(groupName, drawer, args, null, null);
+            this._propertyDrawer = CreateDrawer(context);
         }
         
         public UberDrawer(string groupName, string drawer, string[] enumNames, float[] vals)
         {
             this._groupName = groupName;
             this._drawer = drawer;
-            this._propertyDrawer = null;
-            if (drawer == "Enum") this._propertyDrawer = new UberEnumDrawer(groupName, enumNames, vals);
+            var context = CreateContext(groupName, drawer, Array.Empty<string>(), enumNames, vals);
+            this._propertyDrawer = CreateDrawer(context);
+        }
+
+        private static UberDrawerContext CreateContext(
+            string groupName,
+            string drawerKey,
+            string[] args,
+            string[] enumNames,
+            float[] enumValues)
+        {
+            var hasParent = GroupNest.TryPeek(out var parentGroup);
+            parentGroup = hasParent ? parentGroup : string.Empty;
+            var groupStack = GroupStr();
+            return new UberDrawerContext(groupName, drawerKey, args, enumNames, enumValues, parentGroup, groupStack);
+        }
+
+        private static MaterialPropertyDrawer CreateDrawer(UberDrawerContext context)
+        {
+            if (string.IsNullOrEmpty(context.DrawerKey))
+                return null;
+
+            if (context.DrawerKey == "ResetGroup")
+            {
+                GroupExpanded.Clear();
+                GroupNest.Clear();
+                return null;
+            }
+
+            EnsureRegistry();
+            if (!DrawerConstructors.TryGetValue(context.DrawerKey, out var constructor))
+                return null;
+
+            try
+            {
+                return (MaterialPropertyDrawer)constructor.Invoke(new object[] { context });
+            }
+            catch (System.Exception ex)
+            {
+                UberDrawerLogger.LogError($"Failed to create drawer for key '{context.DrawerKey}': {ex.Message}");
+                return null;
+            }
+        }
+
+        private static void EnsureRegistry()
+        {
+            if (_registryInitialized)
+                return;
+
+            _registryInitialized = true;
+            foreach (var type in TypeCache.GetTypesWithAttribute<DrawerKeyAttribute>())
+            {
+                var attribute = (DrawerKeyAttribute)Attribute.GetCustomAttribute(type, typeof(DrawerKeyAttribute));
+                if (attribute == null)
+                    continue;
+
+                if (!typeof(MaterialPropertyDrawer).IsAssignableFrom(type))
+                {
+                    UberDrawerLogger.LogError($"DrawerKeyAttribute is applied to non-drawer type: {type.FullName}");
+                    continue;
+                }
+
+                var key = attribute.Key;
+                if (string.IsNullOrEmpty(key))
+                {
+                    UberDrawerLogger.LogError($"Drawer key is empty on type: {type.FullName}");
+                    continue;
+                }
+
+                var constructor = type.GetConstructor(new[] { typeof(UberDrawerContext) });
+                if (constructor == null)
+                {
+                    UberDrawerLogger.LogError($"Drawer type '{type.FullName}' lacks UberDrawerContext constructor");
+                    continue;
+                }
+
+                if (DrawerConstructors.TryGetValue(key, out var existing))
+                {
+                    UberDrawerLogger.LogError(
+                        $"Drawer key '{key}' is duplicated: {existing.DeclaringType?.FullName} and {type.FullName}");
+                    continue;
+                }
+
+                DrawerConstructors.Add(key, constructor);
+            }
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

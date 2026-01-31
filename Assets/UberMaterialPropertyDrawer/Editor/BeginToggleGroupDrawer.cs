@@ -3,12 +3,17 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("BeginToggleGroup")]
     public class BeginToggleGroupDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
         private readonly int _indentNum = 0;
         private readonly string _parentGroup = "";
         private readonly string _memo;
+
+        public BeginToggleGroupDrawer(UberDrawerContext context) : this(context.GroupName, context.ParentGroup)
+        {
+        }
 
         public BeginToggleGroupDrawer(string groupName, string parentGroupName = "")
         {

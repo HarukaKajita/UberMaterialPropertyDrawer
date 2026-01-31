@@ -3,9 +3,14 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("Vector2")]
     public class Vector2Drawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
+
+        public Vector2Drawer(UberDrawerContext context) : this(context.GroupName)
+        {
+        }
 
         public Vector2Drawer(string groupName)
         {

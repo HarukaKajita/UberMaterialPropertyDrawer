@@ -3,9 +3,14 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("ToggleUI")]
     public class UberToggleDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
+
+        public UberToggleDrawer(UberDrawerContext context) : this(context.GroupName)
+        {
+        }
 
         public UberToggleDrawer(string groupName)
         {

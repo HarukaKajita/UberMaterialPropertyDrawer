@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    [DrawerKey("CurveTexture")]
     public class CurveTextureDrawer : MaterialPropertyDrawer
     {
         private readonly string _groupName = "";
@@ -12,6 +13,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private int _resolution = 256;
         private bool _accumulate = false;
         private bool _useHalfTexture = false;
+
+        public CurveTextureDrawer(UberDrawerContext context) : this(context.GroupName, context.Args)
+        {
+        }
 
         public CurveTextureDrawer(string groupName, string[] args)
         {
