@@ -3,64 +3,55 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("BeginGroup")]
-    public class BeginGroupDrawer : MaterialPropertyDrawer
+    public class BeginGroupDrawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
         private readonly int _indentNum = 0;
         private readonly string _parentGroup = "";
         private string _memo;
 
-        public BeginGroupDrawer(UberDrawerContext context) : this(context.GroupName, context.ParentGroup)
+        public BeginGroupDrawer(string groupName) : base(groupName)
         {
-        }
-
-        public BeginGroupDrawer(string groupName, string parentGroupName = "")
-        {
-            this._groupName = groupName;
-            this._parentGroup = parentGroupName;
-            this._indentNum = UberDrawer.GetGroupIntentLevel();
-            UberDrawer.PushGroup(groupName);
+            _indentNum = IndentLevel;
+            _parentGroup = TryGetParentGroup(out var parentGroup) ? parentGroup : string.Empty;
+            BeginGroupScope();
         }
 
         private bool ParentIsFolded()
         {
             if (string.IsNullOrEmpty(_parentGroup)) return false;
-            return !UberDrawer.GetGroupExpanded(_parentGroup);
+            return !UberGroupState.GetGroupExpanded(_parentGroup);
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log("GetPropertyHeight Begin : " + _groupName);
+            UberDrawerLogger.Log("GetPropertyHeight Begin : " + GroupName);
             if (ParentIsFolded()) return -2;
-            return 22 + 2; //調整した方が良いかも？
+            return 22 + 2; // Adjust if needed.
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log("OnGUI Begin : " + _groupName);
+            UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var newState = false;
-            if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberDrawer.GetGroupExpanded(_groupName));
+            if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(GroupName));
             EditorGUI.indentLevel++;
-            UberDrawer.SetGroupExpanded(_groupName, newState);
+            UberGroupState.SetGroupExpanded(GroupName, newState);
         }
 
         private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded)
         {
-            UberDrawerLogger.Log("BeginPanel " + _groupName);
+            UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
-            style.border = new RectOffset(7, 7, 4, 4); //背景の淵が何故か変わる
-            style.fixedHeight = 22; //背景の高さ
+            style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
+            style.fixedHeight = 22; // Background height.
             position.y += 6;
             const int indentSize = 15;
             var indentOffset = indentSize * _indentNum;
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset,
                 style.fixedHeight);
-            GUI.Box(bgRect, "", style); //背景
+            GUI.Box(bgRect, "", style); // Background.
             var interactiveRect = new Rect(bgRect.x, bgRect.y, bgRect.width, bgRect.height);
             var e = Event.current;
-            // var toggleRect = new Rect(rect.x + 4f, rect.y + 2f, 13f, 13f);
-            var x0 = position.x + 2 + indentOffset;
             if (e.type == EventType.Repaint)
             {
                 EditorStyles.foldout.Draw(new Rect(position.x + 2 + indentOffset, position.y, 18, 18), false, false,
@@ -73,12 +64,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 e.Use();
             }
 
-            // prop.floatValue = EditorGUI.Toggle(new Rect(position.x+2, position.y+1, 18, 18), prop.floatValue == 1.0) ? 1 : 0;
-            // var x1 = position.x+18;
-            // _memo = _indentNum.ToString() + "position.x=" + x0 +"->"+x1;
             EditorGUI.LabelField(
                 new Rect(position.x + 18, position.y, 300, 18),
-                this._groupName + ":" + _memo,
+                GroupName + ":" + _memo,
                 EditorStyles.boldLabel);
 
             return expanded;

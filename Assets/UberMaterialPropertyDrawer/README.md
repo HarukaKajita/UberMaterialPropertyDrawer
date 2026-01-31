@@ -17,40 +17,46 @@ git@github.com:HarukaKajita/UberMaterialPropertyDrawer.git?path=Assets/UberMater
 If the repository is private, make sure your Git access is configured (SSH key or credential helper).
 
 ## Usage (ShaderLab)
-Use the `Uber` material property drawer attribute in the shader `Properties` block.
+Use drawer class names directly in the shader `Properties` block.
 The drawer syntax is:
 ```
-[Uber(GroupName, DrawerName, optionalArgs...)]
+[DrawerName(GroupName, optionalArgs...)]
 ```
-`GroupName` controls grouping, `DrawerName` selects behavior, and `optionalArgs` configure the drawer.
+`GroupName` controls grouping, and `optionalArgs` configure the drawer.
 
 Example:
 ```
-[Uber(MyGroup, BeginGroup)] _GroupHeader("My Group", Float) = 0
-[Uber(MyGroup, ToggleUI)] _Enable("Enable", Float) = 0
-[Uber(MyGroup, Vector2)] _Scale("Scale", Vector) = (1, 1, 0, 0)
-[Uber(MyGroup, CurveTexture, ch4, res256, bit16)] _CurveTex("Curve", 2D) = "white" {}
-[Uber(MyGroup, GradientTexture, res256)] _GradientTex("Gradient", 2D) = "white" {}
-[Uber(MyGroup, EndGroup)] _GroupEnd("End", Float) = 0
+[BeginGroup(MyGroup)] _GroupHeader("My Group", Float) = 0
+[UberToggle(MyGroup)] _Enable("Enable", Float) = 0
+[Vector2(MyGroup)] _Scale("Scale", Vector) = (1, 1, 0, 0)
+[CurveTexture(MyGroup, ch4, res256, bit16)] _CurveTex("Curve", 2D) = "white" {}
+[GradientTexture(MyGroup, res256)] _GradientTex("Gradient", 2D) = "white" {}
+[EndGroup(MyGroup)] _GroupEnd("End", Float) = 0
+```
+
+### InitGroup decorator
+`[InitGroupDecorator]` resets the group state. It can be stacked with other drawers:
+```
+[InitGroupDecorator][BeginGroup(MyGroup)] _GroupHeader("My Group", Float) = 0
 ```
 
 ### Supported drawer types
 - `BeginGroup` / `EndGroup`: Foldout group start/end.
 - `BeginToggleGroup`: Foldout group controlled by a Float/Int toggle property (the property itself is the toggle).
-- `ToggleUI`: Boolean toggle UI for Float/Int properties.
+- `UberToggle`: Boolean toggle UI for Float/Int properties.
 - `Vector2` / `Vector3`: Compact vector fields with custom label layout.
-- `Enum`: Enum popup. Use `Enum` + type name, or explicit `name, value` pairs.
+- `UberEnum`: Enum popup. Use enum type name or explicit `name, value` pairs.
 - `CurveTexture`: Generates a curve-based texture and assigns it to the property.
 - `GradientTexture`: Generates a gradient texture and assigns it to the property.
 
-Example for `Enum` by type name:
+Example for `UberEnum` by type name:
 ```
-[Uber(MyGroup, Enum, MyEnumType)] _Mode("Mode", Float) = 0
+[UberEnum(MyGroup, MyEnumType)] _Mode("Mode", Float) = 0
 ```
 
-Example for `Enum` with explicit pairs:
+Example for `UberEnum` with explicit pairs:
 ```
-[Uber(MyGroup, Enum, Low, 0, High, 1)] _Mode("Mode", Float) = 0
+[UberEnum(MyGroup, Low, 0, High, 1)] _Mode("Mode", Float) = 0
 ```
 
 ### Curve/Gradient arguments
@@ -60,12 +66,20 @@ Arguments are optional and can be combined:
 - `chN` (e.g., `ch1`, `ch4`): channel count (used by curve textures).
 - `accum`: accumulate curve values over the X axis (curve textures).
 
+### Group name optional (group-only drawers)
+For `Vector2`, `Vector3`, and `UberToggle`, the group name can be omitted:
+- If used outside a group: always visible (acts like a normal drawer).
+- If used inside a group: visibility follows the parent foldout.
+
+### Legacy `Uber` drawer
+`[Uber(GroupName)]` is kept for simple grouping with default drawing. It ignores extra args and always uses standard shader property rendering.
+
 ## How it works
 - Drawer state (foldout open/close) is tracked per group name.
 - Curve/gradient data is stored as sub-assets inside the material.
 - Generated textures are also stored as material sub-assets and assigned to the property.
 
 ## Tips
-- Use Float or Int properties for toggle-driven drawers (`BeginToggleGroup`, `ToggleUI`).
+- Use Float or Int properties for toggle-driven drawers (`BeginToggleGroup`, `UberToggle`).
 - Place `BeginGroup`/`EndGroup` around related properties to keep inspectors readable.
 - If a group does not respond, confirm the group name matches exactly (case-sensitive).

@@ -4,39 +4,36 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("GradientTexture")]
-    public class GradientTextureDrawer : MaterialPropertyDrawer
+    public class GradientTextureDrawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
-
         private int _channelNum = 1;
         private int _resolution = 256;
         private bool _useHalfTexture = false;
 
-        public GradientTextureDrawer(UberDrawerContext context) : this(context.GroupName, context.Args)
+        public GradientTextureDrawer(string groupName, params string[] args) : base(groupName)
         {
+            ParseArgs(args);
         }
 
-        public GradientTextureDrawer(string groupName, string[] args)
+        private void ParseArgs(string[] args)
         {
-            this._groupName = groupName;
             if (args == null || args.Length == 0) return;
             foreach (var argStr in args)
             {
                 if (argStr.StartsWith("ch"))
-                    this._channelNum = int.Parse(argStr[2..]);
+                    _channelNum = int.Parse(argStr[2..]);
                 else if (argStr.StartsWith("res"))
-                    this._resolution = int.Parse(argStr[3..]);
+                    _resolution = int.Parse(argStr[3..]);
                 else if (argStr.StartsWith("bit"))
-                    this._useHalfTexture = int.Parse(argStr[3..]) == 16;
+                    _useHalfTexture = int.Parse(argStr[3..]) == 16;
             }
         }
-        
+
         private string GradientTexName(MaterialProperty prop) => prop.name + "_GradientTex";
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (!UberDrawer.GetGroupExpanded(_groupName))
+            if (!IsVisibleInGroup())
                 return -2;
             var propertyHeight = GUIHelper.TexturePropertyHeight;
             var interval = 2;
@@ -50,8 +47,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.LabelField(position, "GradientTexture used on non-texture property");
                 return;
             }
-            
-            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
+
+            if (!IsVisibleInGroup()) return;
 
             var mat = editor.target as Material;
             if (mat == null) return;
@@ -80,39 +77,39 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
 
             EditorGUI.BeginChangeCheck();
-            
+
             // Label GUI
             var indentSize = GUIHelper.IndentWidth;
             var propName = ObjectNames.NicifyVariableName(label.text);
             var labelWidth = position.width * 0.3f;
             var labelRect = new Rect(position.x, position.y, labelWidth, EditorGUIUtility.singleLineHeight);
             EditorGUI.LabelField(labelRect, propName);
-            
-            var valueWidth = position.width - labelRect.width + indentSize*2;
+
+            var valueWidth = position.width - labelRect.width + indentSize * 2;
             var valueX = labelRect.width;
-            
+
             // Gradient GUI
-            var gradientRect = new Rect(valueX, position.y, valueWidth/4, EditorGUIUtility.singleLineHeight);
+            var gradientRect = new Rect(valueX, position.y, valueWidth / 4, EditorGUIUtility.singleLineHeight);
             data.gradient = EditorGUI.GradientField(gradientRect, "", data.gradient);
-            
+
             // Texture GUI
             var texturePropWidth = GUIHelper.TexturePropertyHeight;
             var textureRect = new Rect(gradientRect.xMax, position.y, texturePropWidth, texturePropWidth);
             EditorGUI.BeginDisabledGroup(true);
             editor.TextureProperty(textureRect, prop, "", false);
             EditorGUI.EndDisabledGroup();
-            
+
             // Tiling Offset GUI
             var tillingOffsetHeight = GUIHelper.TillingOffsetPropertyHeight;
-            var tillingOffsetY = position.y + (textureRect.height - tillingOffsetHeight)/2;
-            var tillingOffsetX = textureRect.xMax+2;
+            var tillingOffsetY = position.y + (textureRect.height - tillingOffsetHeight) / 2;
+            var tillingOffsetX = textureRect.xMax + 2;
             var width = valueWidth - gradientRect.width - textureRect.width;
             var tilingOffsetRect = new Rect(tillingOffsetX, tillingOffsetY, width, tillingOffsetHeight);
             editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
 
             // When changed shader lab property attribute value.(ex: resolution, channel num, bit)
             var isChangedTextureSettings = IsChangedTextureSettings(data);
-            
+
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
                 var tex = BakeTexture(data);
@@ -140,7 +137,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var format = TextureFormat.RGBA32;
             if (_useHalfTexture)
             {
-                if(_channelNum == 1) format = TextureFormat.RHalf;
+                if (_channelNum == 1) format = TextureFormat.RHalf;
                 else if (_channelNum == 2) format = TextureFormat.RGHalf;
                 else if (_channelNum == 3) format = TextureFormat.RGBAHalf;
                 else if (_channelNum == 4) format = TextureFormat.RGBAHalf;
@@ -154,6 +151,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
             return format;
         }
+
         private bool IsChangedTextureSettings(GradientTextureData data)
         {
             var format = PickCorrectTextureFormat();
@@ -163,7 +161,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private Texture2D BakeTexture(GradientTextureData data)
         {
             var format = PickCorrectTextureFormat();
-                
+
             var tex = data.texture;
             if (tex == null)
                 tex = new Texture2D(_resolution, 1, format, true, true);

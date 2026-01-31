@@ -3,26 +3,20 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    public class EndGroupDrawer : UberDrawerBase
+    public sealed class InitGroupDecorator : MaterialPropertyDrawer
     {
-        public EndGroupDrawer(string groupName) : base(groupName)
+        public InitGroupDecorator()
         {
-            EndGroupScope(groupName);
+            UberGroupState.ResetAll();
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            return -2;
+            return 0f;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            EndPanel();
-        }
-
-        private void EndPanel()
-        {
-            EditorGUI.indentLevel -= 1;
         }
     }
 }

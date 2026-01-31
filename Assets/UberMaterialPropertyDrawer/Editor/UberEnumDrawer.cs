@@ -5,89 +5,34 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("Enum")]
-    public class UberEnumDrawer : MaterialPropertyDrawer
+    public class UberEnumDrawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
-        private readonly GUIContent[] names;
-        private readonly int[] values;
-        private readonly string _errorLabel = null;
+        private readonly GUIContent[] _names;
+        private readonly int[] _values;
+        private readonly string _errorLabel;
 
-        public UberEnumDrawer(UberDrawerContext context)
+        public UberEnumDrawer(string groupName, string enumName) : base(groupName)
         {
-            this._groupName = context.GroupName;
-
-            if (context.EnumNames != null && context.EnumValues != null)
-            {
-                this.names = new GUIContent[context.EnumNames.Length];
-                for (int i = 0; i < context.EnumNames.Length; ++i)
-                    this.names[i] = new GUIContent(context.EnumNames[i]);
-
-                values = new int[context.EnumValues.Length];
-                for (int i = 0; i < context.EnumValues.Length; ++i)
-                    values[i] = (int)context.EnumValues[i];
-
-                return;
-            }
-
-            if (context.Args.Length == 1)
-            {
-                var enumName = context.Args[0];
-                var loadedTypes = TypeCache.GetTypesDerivedFrom(typeof(Enum));
-                try
-                {
-                    var enumType = loadedTypes.FirstOrDefault(x => x.Name == enumName || x.FullName == enumName);
-                    var enumNames = Enum.GetNames(enumType);
-                    this.names = new GUIContent[enumNames.Length];
-                    for (int i = 0; i < enumNames.Length; ++i)
-                        this.names[i] = new GUIContent(enumNames[i]);
-
-                    var enumVals = Enum.GetValues(enumType);
-                    values = new int[enumVals.Length];
-                    for (var i = 0; i < enumVals.Length; ++i)
-                        values[i] = (int)enumVals.GetValue(i);
-                    return;
-                }
-                catch (Exception)
-                {
-                    _errorLabel = $"Failed to create MaterialEnum, enum {enumName} not found";
-                    UberDrawerLogger.LogError(_errorLabel);
-                    names = Array.Empty<GUIContent>();
-                    values = Array.Empty<int>();
-                    return;
-                }
-            }
-
-            _errorLabel = "Failed to create MaterialEnum, args are invalid";
-            UberDrawerLogger.LogError(_errorLabel);
-            names = Array.Empty<GUIContent>();
-            values = Array.Empty<int>();
-        }
-
-        public UberEnumDrawer(string groupName, string enumName)
-        {
-            this._groupName = groupName;
-
-            var loadedTypes = TypeCache.GetTypesDerivedFrom(typeof(Enum));
             try
             {
+                var loadedTypes = TypeCache.GetTypesDerivedFrom(typeof(Enum));
                 var enumType = loadedTypes.FirstOrDefault(x => x.Name == enumName || x.FullName == enumName);
                 var enumNames = Enum.GetNames(enumType);
-                this.names = new GUIContent[enumNames.Length];
+                _names = new GUIContent[enumNames.Length];
                 for (int i = 0; i < enumNames.Length; ++i)
-                    this.names[i] = new GUIContent(enumNames[i]);
+                    _names[i] = new GUIContent(enumNames[i]);
 
                 var enumVals = Enum.GetValues(enumType);
-                values = new int[enumVals.Length];
+                _values = new int[enumVals.Length];
                 for (var i = 0; i < enumVals.Length; ++i)
-                    values[i] = (int)enumVals.GetValue(i);
+                    _values[i] = (int)enumVals.GetValue(i);
             }
             catch (Exception)
             {
                 _errorLabel = $"Failed to create MaterialEnum, enum {enumName} not found";
                 UberDrawerLogger.LogError(_errorLabel);
-                names = Array.Empty<GUIContent>();
-                values = Array.Empty<int>();
+                _names = Array.Empty<GUIContent>();
+                _values = Array.Empty<int>();
             }
         }
 
@@ -128,20 +73,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
         }
 
-        public UberEnumDrawer(string groupName, string[] enumNames, float[] vals)
+        private UberEnumDrawer(string groupName, string[] enumNames, float[] vals) : base(groupName)
         {
-            this._groupName = groupName;
-
-            this.names = new GUIContent[enumNames.Length];
+            _names = new GUIContent[enumNames.Length];
             for (int i = 0; i < enumNames.Length; ++i)
-                this.names[i] = new GUIContent(enumNames[i]);
+                _names[i] = new GUIContent(enumNames[i]);
 
-            values = new int[vals.Length];
+            _values = new int[vals.Length];
             for (int i = 0; i < vals.Length; ++i)
-                values[i] = (int)vals[i];
+                _values[i] = (int)vals[i];
         }
 
-        static bool IsPropertyTypeSuitable(MaterialProperty prop)
+        private static bool IsPropertyTypeSuitable(MaterialProperty prop)
         {
             return prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range ||
                    prop.type == MaterialProperty.PropType.Int;
@@ -149,15 +92,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (UberDrawer.GetGroupExpanded(_groupName))
-                return EditorGUIUtility.singleLineHeight;
-            else
-                return -2;
+            return IsVisibleInGroup() ? EditorGUIUtility.singleLineHeight : -2;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
+            if (!IsVisibleInGroup()) return;
 
             if (!IsPropertyTypeSuitable(prop))
             {
@@ -166,7 +106,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return;
             }
 
-            if (names.Length == 0)
+            if (_names.Length == 0)
             {
                 EditorGUI.LabelField(position, _errorLabel);
                 return;
@@ -178,9 +118,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
                 var value = (int)prop.floatValue;
                 int selectedIndex = -1;
-                for (var index = 0; index < values.Length; index++)
+                for (var index = 0; index < _values.Length; index++)
                 {
-                    var i = values[index];
+                    var i = _values[index];
                     if (i == value)
                     {
                         selectedIndex = index;
@@ -188,12 +128,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     }
                 }
 
-                var selIndex = EditorGUI.Popup(position, label, selectedIndex, names);
+                var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
                 EditorGUI.showMixedValue = false;
-                if(prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
-                    prop.floatValue = values[selIndex];
-                else if(prop.type == MaterialProperty.PropType.Int)
-                    prop.intValue = values[selIndex];
+                if (prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
+                    prop.floatValue = _values[selIndex];
+                else if (prop.type == MaterialProperty.PropType.Int)
+                    prop.intValue = _values[selIndex];
             }
             else
             {
@@ -201,9 +141,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
                 var value = prop.intValue;
                 int selectedIndex = -1;
-                for (var index = 0; index < values.Length; index++)
+                for (var index = 0; index < _values.Length; index++)
                 {
-                    var i = values[index];
+                    var i = _values[index];
                     if (i == value)
                     {
                         selectedIndex = index;
@@ -211,9 +151,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     }
                 }
 
-                var selIndex = EditorGUI.Popup(position, label, selectedIndex, names);
+                var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
                 EditorGUI.showMixedValue = false;
-                prop.intValue = values[selIndex];
+                prop.intValue = _values[selIndex];
             }
         }
     }

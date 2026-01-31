@@ -3,31 +3,24 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("Vector3")]
-    public class Vector3Drawer : MaterialPropertyDrawer
+    public class Vector3Drawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
-
-        public Vector3Drawer(UberDrawerContext context) : this(context.GroupName)
+        public Vector3Drawer() : base()
         {
         }
 
-        public Vector3Drawer(string groupName)
+        public Vector3Drawer(string groupName) : base(groupName)
         {
-            this._groupName = groupName;
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (UberDrawer.GetGroupExpanded(_groupName))
-                return EditorGUIUtility.singleLineHeight;
-            else
-                return -2;
+            return IsVisibleInGroup() ? EditorGUIUtility.singleLineHeight : -2;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
+            if (!IsVisibleInGroup()) return;
 
             var propName = ObjectNames.NicifyVariableName(label.text);
             var totalIndentSize = EditorGUI.indentLevel * GUIHelper.IndentWidth;
@@ -39,9 +32,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             var labelRect = new Rect(position.x, position.y, labelWidth, position.height);
             var valueRect = new Rect(valueX, position.y, valueWidth, position.height);
-            // EditorGUI.DrawRect(position, Color.green);
-            // EditorGUI.DrawRect(labelRect, Color.red);
-            // EditorGUI.DrawRect(valueRect, Color.blue);
             EditorGUI.LabelField(labelRect, propName);
             prop.vectorValue = EditorGUI.Vector3Field(valueRect, GUIContent.none, prop.vectorValue);
             EditorGUIUtility.labelWidth = tmp_labelWidth;

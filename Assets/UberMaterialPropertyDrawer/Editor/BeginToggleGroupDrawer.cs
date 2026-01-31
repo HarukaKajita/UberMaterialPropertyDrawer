@@ -3,72 +3,62 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("BeginToggleGroup")]
-    public class BeginToggleGroupDrawer : MaterialPropertyDrawer
+    public class BeginToggleGroupDrawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
         private readonly int _indentNum = 0;
         private readonly string _parentGroup = "";
         private readonly string _memo;
 
-        public BeginToggleGroupDrawer(UberDrawerContext context) : this(context.GroupName, context.ParentGroup)
+        public BeginToggleGroupDrawer(string groupName) : base(groupName)
         {
-        }
-
-        public BeginToggleGroupDrawer(string groupName, string parentGroupName = "")
-        {
-            this._groupName = groupName;
-            this._parentGroup = parentGroupName;
-            this._indentNum = UberDrawer.GetGroupIntentLevel();
-            UberDrawer.PushGroup(groupName);
+            _indentNum = IndentLevel;
+            _parentGroup = TryGetParentGroup(out var parentGroup) ? parentGroup : string.Empty;
+            BeginGroupScope();
         }
 
         private bool ParentIsFolded()
         {
             if (string.IsNullOrEmpty(_parentGroup)) return false;
-            return !UberDrawer.GetGroupExpanded(_parentGroup);
+            return !UberGroupState.GetGroupExpanded(_parentGroup);
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             var parentIsFolded = ParentIsFolded();
-            UberDrawerLogger.Log("GetPropertyHeight Begin : " + _groupName);
-            UberDrawerLogger.Log(_groupName + "のParent" + _parentGroup + "は" + (parentIsFolded ? "閉じてる" : "開いている"));
+            UberDrawerLogger.Log("GetPropertyHeight Begin : " + GroupName);
+            UberDrawerLogger.Log(GroupName + "のParent" + _parentGroup + "は" + (parentIsFolded ? "閉じてる" : "開いている"));
             if (parentIsFolded) return -2;
-            return 22 + 2; //調整した方が良いかも？
+            return 22 + 2; // Adjust if needed.
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log("OnGUI Begin : " + _groupName);
+            UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var newState = false;
-            if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberDrawer.GetGroupExpanded(_groupName));
+            if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(GroupName));
             EditorGUI.indentLevel++;
-            UberDrawer.SetGroupExpanded(_groupName, newState);
+            UberGroupState.SetGroupExpanded(GroupName, newState);
         }
 
         private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded)
         {
-            UberDrawerLogger.Log("BeginPanel " + _groupName);
+            UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
-            style.border = new RectOffset(7, 7, 4, 4); //背景の淵が何故か変わる
-            style.fixedHeight = 22; //背景の高さ
+            style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
+            style.fixedHeight = 22; // Background height.
             position.y += 6;
             var indentOffset = GUIHelper.IndentWidth * _indentNum;
-            // Group header
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset, style.fixedHeight);
-            GUI.Box(bgRect, "", style); //背景
+            GUI.Box(bgRect, "", style);
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
-            
+
             var toggleState = Util.ToBool(prop);
             toggleState = GUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState, "");
             Util.SetBool(prop, toggleState);
-            
-            // Group Name Label
-            EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), this._groupName + ":" + _memo, EditorStyles.boldLabel);
-            
-            // Clickable Area
+
+            EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), GroupName + ":" + _memo, EditorStyles.boldLabel);
+
             var interactiveRect = bgRect;
             interactiveRect.x += buttonWidth + buttonLeftMargin;
             interactiveRect.width -= buttonWidth + buttonLeftMargin;

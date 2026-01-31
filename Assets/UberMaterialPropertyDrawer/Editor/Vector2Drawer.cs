@@ -3,31 +3,24 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("Vector2")]
-    public class Vector2Drawer : MaterialPropertyDrawer
+    public class Vector2Drawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
-
-        public Vector2Drawer(UberDrawerContext context) : this(context.GroupName)
+        public Vector2Drawer() : base()
         {
         }
 
-        public Vector2Drawer(string groupName)
+        public Vector2Drawer(string groupName) : base(groupName)
         {
-            this._groupName = groupName;
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (UberDrawer.GetGroupExpanded(_groupName))
-                return EditorGUIUtility.singleLineHeight;
-            else
-                return -2;
+            return IsVisibleInGroup() ? EditorGUIUtility.singleLineHeight : -2;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
+            if (!IsVisibleInGroup()) return;
 
             var propName = ObjectNames.NicifyVariableName(label.text);
             var totalIndentSize = EditorGUI.indentLevel * GUIHelper.IndentWidth;
@@ -39,15 +32,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             var labelRect = new Rect(position.x, position.y, labelWidth, position.height);
             var valueRect = new Rect(valueX, position.y, valueWidth, position.height);
-            // EditorGUI.DrawRect(position, Color.green);
-            // EditorGUI.DrawRect(labelRect, Color.red);
-            // EditorGUI.DrawRect(valueRect, Color.blue);
             EditorGUI.LabelField(labelRect, propName);
             prop.vectorValue = EditorGUI.Vector2Field(valueRect, GUIContent.none, prop.vectorValue);
             EditorGUIUtility.labelWidth = tmp_labelWidth;
             EditorGUIUtility.fieldWidth = tmp_fieldWidth;
             EditorGUIUtility.wideMode = false;
-
         }
     }
 }

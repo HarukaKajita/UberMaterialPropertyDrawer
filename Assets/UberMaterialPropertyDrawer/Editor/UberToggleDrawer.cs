@@ -3,39 +3,32 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    [DrawerKey("ToggleUI")]
-    public class UberToggleDrawer : MaterialPropertyDrawer
+    public class UberToggleDrawer : UberDrawerBase
     {
-        private readonly string _groupName = "";
-
-        public UberToggleDrawer(UberDrawerContext context) : this(context.GroupName)
+        public UberToggleDrawer() : base()
         {
         }
 
-        public UberToggleDrawer(string groupName)
+        public UberToggleDrawer(string groupName) : base(groupName)
         {
-            this._groupName = groupName;
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (UberDrawer.GetGroupExpanded(_groupName))
-                return EditorGUIUtility.singleLineHeight;
-            else
-                return -2;
+            return IsVisibleInGroup() ? EditorGUIUtility.singleLineHeight : -2;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!UberDrawer.GetGroupExpanded(_groupName)) return;
+            if (!IsVisibleInGroup()) return;
 
             var propName = ObjectNames.NicifyVariableName(label.text);
-            
+
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = prop.hasMixedValue;
 
             var toggleValue = Util.ToBool(prop);
-            
+
             toggleValue = EditorGUI.Toggle(position, propName, toggleValue);
             EditorGUI.showMixedValue = false;
 
