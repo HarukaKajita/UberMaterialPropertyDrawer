@@ -81,7 +81,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var indentSize = GUIHelper.IndentWidth;
             var propName = ObjectNames.NicifyVariableName(label.text);
             var labelWidth = position.width * 0.3f;
-            var labelRect = new Rect(position.x, position.y, labelWidth, EditorGUIUtility.singleLineHeight);
+            var labelRect = new Rect(position.x, position.y, labelWidth, GUIHelper.SingleLineHeight);
             EditorGUI.LabelField(labelRect, propName);
 
             var valueWidth = position.width - labelRect.width + indentSize * 2;
