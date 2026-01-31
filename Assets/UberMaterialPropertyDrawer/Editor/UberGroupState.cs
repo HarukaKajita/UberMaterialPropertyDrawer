@@ -8,6 +8,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private static readonly Dictionary<string, bool> GroupExpanded = new();
         private static readonly Stack<string> GroupNest = new();
 
+        /// <summary>
+        /// Returns whether the specified group is open.
+        /// This does not consider parent groups and only reflects the group's own state.
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns></returns>
         internal static bool GetGroupExpanded(string groupName)
         {
             if (string.IsNullOrEmpty(groupName)) return true;
@@ -71,8 +77,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             GroupExpanded.Clear();
             GroupNest.Clear();
         }
-
-        internal static bool ParentGroupIsFolded(int indentNum)
+        
+        internal static bool ParentGroupIsClosed(int indentNum)
         {
             UberDrawerLogger.Log("indentNum : " + indentNum);
             UberDrawerLogger.Log("GroupNest : " + GroupNest.Count);
@@ -82,7 +88,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             for (var i = 0; i < indentNum; i++)
             {
                 var parentalGroup = groupArray[i];
-                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "expanded" : "folded"));
+                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "opened" : "closed"));
                 if (!GetGroupExpanded(parentalGroup)) return true;
             }
             return false;

@@ -12,7 +12,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            return -2;
+            return GUIHelper.ClosedHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

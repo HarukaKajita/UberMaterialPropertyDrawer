@@ -6,11 +6,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     internal static class GUIHelper
     {
         internal static readonly float IndentWidth = 15f;
-        internal static readonly float Interval = 2f;
+        internal static readonly float GroupHeaderHeight = 22f;
+        internal static readonly float GroupHeaderTopPadding = 0f;
         internal static readonly float TexturePropertyHeight = EditorGUIUtility.singleLineHeight *3.5f;
         internal static readonly float TillingOffsetPropertyHeight = EditorGUIUtility.singleLineHeight *2f+2;
-        
-
+        internal static readonly float ClosedHeight = -EditorGUIUtility.standardVerticalSpacing;
         internal static float GetIndentWidth() => EditorGUI.indentLevel * IndentWidth;
         internal static Rect Indent(Rect rect, bool shrinkWidth = false)
         {

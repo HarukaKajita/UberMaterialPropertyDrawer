@@ -15,14 +15,24 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected string GroupName { get; }
         protected int IndentLevel => UberGroupState.GetIndentLevel();
-
+        
+        /// <summary>
+        /// Returns whether the current group is visible.
+        /// True only when all ancestor groups up to the direct parent are visible.
+        /// </summary>
+        /// <returns></returns>
         protected bool IsVisibleInGroup()
         {
             if (string.IsNullOrEmpty(GroupName))
-                return !UberGroupState.ParentGroupIsFolded(IndentLevel);
+                return !UberGroupState.ParentGroupIsClosed(IndentLevel);
 
             return UberGroupState.GetGroupExpanded(GroupName)
-                   && !UberGroupState.ParentGroupIsFolded(IndentLevel);
+                   && !UberGroupState.ParentGroupIsClosed(IndentLevel);
+        }
+
+        protected float GetVisibleHeight(float visibleHeight)
+        {
+            return IsVisibleInGroup() ? visibleHeight : GUIHelper.ClosedHeight;
         }
 
         protected void BeginGroupScope()

@@ -92,7 +92,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            return IsVisibleInGroup() ? EditorGUIUtility.singleLineHeight : -2;
+            return GetVisibleHeight(EditorGUIUtility.singleLineHeight);
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

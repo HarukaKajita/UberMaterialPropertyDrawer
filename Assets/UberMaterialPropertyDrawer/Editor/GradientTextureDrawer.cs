@@ -33,11 +33,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (!IsVisibleInGroup())
-                return -2;
-            var propertyHeight = GUIHelper.TexturePropertyHeight;
-            var interval = 2;
-            return propertyHeight + interval;
+            return GetVisibleHeight(GUIHelper.TexturePropertyHeight);
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)

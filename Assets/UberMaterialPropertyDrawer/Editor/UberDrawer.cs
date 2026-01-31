@@ -56,7 +56,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             if (!UberGroupState.GetGroupExpanded(_groupName))
-                return -2;
+                return GUIHelper.ClosedHeight;
             return MaterialEditor.GetDefaultPropertyHeight(prop);
         }
     }

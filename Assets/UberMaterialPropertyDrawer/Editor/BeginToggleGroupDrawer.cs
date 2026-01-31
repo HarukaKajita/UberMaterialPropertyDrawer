@@ -16,7 +16,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             BeginGroupScope();
         }
 
-        private bool ParentIsFolded()
+        private bool ParentIsClosed()
         {
             if (string.IsNullOrEmpty(_parentGroup)) return false;
             return !UberGroupState.GetGroupExpanded(_parentGroup);
@@ -24,18 +24,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            var parentIsFolded = ParentIsFolded();
+            var parentIsClosed = ParentIsClosed();
             UberDrawerLogger.Log("GetPropertyHeight Begin : " + GroupName);
-            UberDrawerLogger.Log(GroupName + "のParent" + _parentGroup + "は" + (parentIsFolded ? "閉じてる" : "開いている"));
-            if (parentIsFolded) return -2;
-            return 22 + 2; // Adjust if needed.
+            UberDrawerLogger.Log(GroupName + "のParent" + _parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
+            if (parentIsClosed) return GUIHelper.ClosedHeight;
+            return GUIHelper.GroupHeaderHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var newState = false;
-            if (!ParentIsFolded()) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(GroupName));
+            if (!ParentIsClosed()) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(GroupName));
             EditorGUI.indentLevel++;
             UberGroupState.SetGroupExpanded(GroupName, newState);
         }
@@ -45,8 +45,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
-            style.fixedHeight = 22; // Background height.
-            position.y += 6;
+            style.fixedHeight = GUIHelper.GroupHeaderHeight; // Background height.
+            position.y += GUIHelper.GroupHeaderTopPadding;
             var indentOffset = GUIHelper.IndentWidth * _indentNum;
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset, style.fixedHeight);
             GUI.Box(bgRect, "", style);
