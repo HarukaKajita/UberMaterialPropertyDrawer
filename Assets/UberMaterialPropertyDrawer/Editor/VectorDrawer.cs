@@ -3,14 +3,17 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    public class Vector2Drawer : UberDrawerBase
+    public class VectorDrawer : UberDrawerBase
     {
-        public Vector2Drawer() : base()
+        private int _dimension;
+        public VectorDrawer(float dim) : base()
         {
+            _dimension = (int)dim;
         }
 
-        public Vector2Drawer(string groupName) : base(groupName)
+        public VectorDrawer(string groupName, float dim) : base(groupName)
         {
+            _dimension = (int)dim;
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
@@ -34,7 +37,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var labelRect = new Rect(position.x, position.y, labelWidth, position.height);
             var valueRect = new Rect(valueX, position.y, valueWidth, position.height);
             EditorGUI.LabelField(labelRect, propName);
-            prop.vectorValue = EditorGUI.Vector2Field(valueRect, GUIContent.none, prop.vectorValue);
+            if (_dimension == 2)
+                prop.vectorValue = EditorGUI.Vector2Field(valueRect, GUIContent.none, prop.vectorValue);
+            else if(_dimension == 3)
+                prop.vectorValue = EditorGUI.Vector3Field(valueRect, GUIContent.none, prop.vectorValue);
+            else if(_dimension == 4)
+                prop.vectorValue = EditorGUI.Vector4Field(valueRect, GUIContent.none, prop.vectorValue);
             EditorGUIUtility.labelWidth = tmp_labelWidth;
             EditorGUIUtility.fieldWidth = tmp_fieldWidth;
             EditorGUIUtility.wideMode = false;
