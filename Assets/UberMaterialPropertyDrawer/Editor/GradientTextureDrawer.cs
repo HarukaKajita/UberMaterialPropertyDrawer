@@ -56,7 +56,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 data = ScriptableObject.CreateInstance<GradientTextureData>();
                 data.name = dataName;
                 AssetDatabase.AddObjectToAsset(data, mat);
-                data.texture = BakeTexture(data, GradientTexName(prop));
+                data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop));
                 prop.textureValue = data.texture;
                 AssetDatabase.AddObjectToAsset(data.texture, mat);
                 EditorUtility.SetDirty(data);
@@ -117,8 +117,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                var tex = BakeTexture(data, GradientTexName(prop));
-                tex.name = GradientTexName(prop);
+                data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop));
+                var tex = data.texture;
                 if (!subAssetsInMat.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
@@ -163,30 +163,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (data.texture == null) return true;
             var format = PickCorrectTextureFormat();
             return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
-        }
-
-        private Texture2D BakeTexture(GradientTextureData data, string texName)
-        {
-            var format = PickCorrectTextureFormat();
-
-            var tex = data.texture;
-            if (tex == null)
-            {
-                tex = new Texture2D(_resolution, 1, format, true, true);
-                tex.name = texName;
-            }
-            else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
-                tex.Reinitialize(_resolution, 1, format, true);
-
-            var colors = new Color[_resolution];
-            for (int i = 0; i < _resolution; i++)
-            {
-                float t = (float)i / (_resolution - 1);
-                colors[i] = data.gradient.Evaluate(t);
-            }
-            tex.SetPixels(colors);
-            tex.Apply();
-            return tex;
         }
     }
 }

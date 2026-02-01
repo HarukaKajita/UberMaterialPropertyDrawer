@@ -58,7 +58,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 data = ScriptableObject.CreateInstance<CurveTextureData>();
                 data.name = dataName;
                 AssetDatabase.AddObjectToAsset(data, mat);
-                data.texture = BakeTexture(data, CurveTexName(prop));
+                data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop));
                 prop.textureValue = data.texture;
                 AssetDatabase.AddObjectToAsset(data.texture, mat);
                 EditorUtility.SetDirty(data);
@@ -129,8 +129,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                var tex = BakeTexture(data, CurveTexName(prop));
-                tex.name = CurveTexName(prop);
+                 data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop));
+                 var tex = data.texture;
                 if (!subAssets.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
                 data.texture = tex;
@@ -175,49 +175,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (data.texture == null) return true;
             var format = PickCorrectTextureFormat();
             return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
-        }
-
-        private Texture2D BakeTexture(CurveTextureData data, string texName)
-        {
-            var format = PickCorrectTextureFormat();
-
-            var tex = data.texture;
-            if (tex == null)
-            {
-                tex = new Texture2D(_resolution, 1, format, true, true);
-                tex.name = texName;
-            }
-            else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
-                tex.Reinitialize(_resolution, 1, format, true);
-
-            float accR = 0, accG = 0, accB = 0, accA = 0;
-            var colors = new Color[_resolution];
-            for (int i = 0; i < _resolution; i++)
-            {
-                float t = (float)i / (_resolution - 1);
-                float r = data.curveR.Evaluate(t);
-                float g = data.curveG.Evaluate(t);
-                float b = data.curveB.Evaluate(t);
-                float a = data.curveA.Evaluate(t);
-                if (_accumulate)
-                {
-                    accR += r; r = accR;
-                    accG += g; g = accG;
-                    accB += b; b = accB;
-                    accA += a; a = accA;
-                }
-                if (!_useHalfTexture)
-                {
-                    r = Mathf.Clamp01(r);
-                    g = Mathf.Clamp01(g);
-                    b = Mathf.Clamp01(b);
-                    a = Mathf.Clamp01(a);
-                }
-                colors[i] = new Color(r, g, b, a);
-            }
-            tex.SetPixels(colors);
-            tex.Apply();
-            return tex;
         }
     }
 }
