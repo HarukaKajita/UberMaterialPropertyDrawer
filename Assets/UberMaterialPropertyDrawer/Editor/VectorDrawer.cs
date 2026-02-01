@@ -45,7 +45,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 prop.vectorValue = EditorGUI.Vector4Field(valueRect, GUIContent.none, prop.vectorValue);
             EditorGUIUtility.labelWidth = tmp_labelWidth;
             EditorGUIUtility.fieldWidth = tmp_fieldWidth;
-            EditorGUIUtility.wideMode = false;
             MaterialEditor.EndProperty();
         }
     }
