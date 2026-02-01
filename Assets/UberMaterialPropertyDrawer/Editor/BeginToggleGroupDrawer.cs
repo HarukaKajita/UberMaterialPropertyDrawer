@@ -60,7 +60,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
 
-            var toggleState = Util.ToBool(prop);
+            var toggleState = Util.GetAsBool(prop);
             toggleState = GUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState, "");
             Util.SetBool(prop, toggleState);
 

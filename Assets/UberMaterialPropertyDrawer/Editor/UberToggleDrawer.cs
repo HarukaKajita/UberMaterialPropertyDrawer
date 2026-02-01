@@ -28,7 +28,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = prop.hasMixedValue;
 
-            var toggleValue = Util.ToBool(prop);
+            var toggleValue = Util.GetAsBool(prop);
 
             toggleValue = EditorGUI.Toggle(position, propName, toggleValue);
             EditorGUI.showMixedValue = false;

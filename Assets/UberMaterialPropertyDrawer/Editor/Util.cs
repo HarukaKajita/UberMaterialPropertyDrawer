@@ -5,7 +5,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public static class Util
     {
-        public static bool ToBool(MaterialProperty prop)
+        public static bool GetBool(MaterialProperty prop)
         {
             if (prop.type == MaterialProperty.PropType.Int)
                 return prop.intValue != 0;
