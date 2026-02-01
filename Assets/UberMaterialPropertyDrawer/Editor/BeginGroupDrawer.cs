@@ -5,46 +5,55 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public class BeginGroupDrawer : UberDrawerBase
     {
-        private readonly int _indentNum = 0;
-        private readonly string _parentGroup = "";
         private string _memo;
 
         public BeginGroupDrawer(string groupName) : base(groupName)
         {
-            _indentNum = IndentLevel;
-            _parentGroup = TryGetParentGroup(out var parentGroup) ? parentGroup : string.Empty;
-            BeginGroupScope();
         }
 
-        private bool ParentIsClosed()
+        private static bool ParentIsClosed(GroupData data, string parentGroup)
         {
-            if (string.IsNullOrEmpty(_parentGroup)) return false;
-            return !UberGroupState.GetGroupExpanded(_parentGroup);
+            if (string.IsNullOrEmpty(parentGroup)) return false;
+            return !UberGroupState.GetGroupExpanded(data, parentGroup);
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (ParentIsClosed()) return GUIHelper.ClosedHeight;
-            return GUIHelper.GroupHeaderHeight;
+            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
+            var data = GetGroupData(editor);
+            if (TryBeginGroup(data, prop))
+                BeginGroupScope(editor);
+            var parentGroup = GetParentGroup(editor, GroupName);
+            var parentIsClosed = ParentIsClosed(data, parentGroup);
+            UberDrawerLogger.Log(GroupName + "のParent" + parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
+            return parentIsClosed ? GUIHelper.ClosedHeight : GUIHelper.GroupHeaderHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
+            var data = GetGroupData(editor);
+            var indentNum = UberGroupState.GetIndentLevel(data);
+            if (TryBeginGroup(data, prop))
+                BeginGroupScope(editor);
+            var parentGroup = GetParentGroup(editor, GroupName);
+            var parentIsClosed = ParentIsClosed(data, parentGroup);
+            _memo = $" parent:{parentGroup}";
+            UberDrawerLogger.Log(GroupName + "のParent" + parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
             var newState = false;
-            if (!ParentIsClosed()) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(GroupName));
+            if (!parentIsClosed) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(data, GroupName), indentNum);
             EditorGUI.indentLevel++;
-            UberGroupState.SetGroupExpanded(GroupName, newState);
+            UberGroupState.SetGroupExpanded(data, GroupName, newState);
         }
 
-        private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded)
+        private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded, int indentNum)
         {
             UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
             style.fixedHeight = GUIHelper.GroupHeaderHeight; // Background height.
             position.y += GUIHelper.GroupHeaderTopPadding;
-            var indentOffset = GUIHelper.IndentWidth * _indentNum;
+            var indentOffset = GUIHelper.IndentWidth * indentNum;
             var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset,
                 style.fixedHeight);
             GUI.Box(bgRect, "", style); // Background.
@@ -68,6 +77,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorStyles.boldLabel);
 
             return expanded;
+        }
+
+        private static bool TryBeginGroup(GroupData data, MaterialProperty prop)
+        {
+            return UberGroupState.TryRecordPush(data, prop?.name);
         }
     }
 }

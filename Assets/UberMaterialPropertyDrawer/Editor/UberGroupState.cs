@@ -1,12 +1,29 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
     internal static class UberGroupState
     {
-        private static readonly Dictionary<string, bool> GroupExpanded = new();
-        private static readonly Stack<string> GroupNest = new();
+        internal static void BeginPass(GroupData data)
+        {
+            if (data == null) return;
+            data.CurrentPassId++;
+            data.PushedInPass.Clear();
+            data.PoppedInPass.Clear();
+        }
+
+        internal static bool TryRecordPush(GroupData data, string key)
+        {
+            if (data == null || string.IsNullOrEmpty(key)) return false;
+            return data.PushedInPass.Add(key);
+        }
+
+        internal static bool TryRecordPop(GroupData data, string key)
+        {
+            if (data == null || string.IsNullOrEmpty(key)) return false;
+            return data.PoppedInPass.Add(key);
+        }
 
         /// <summary>
         /// Returns whether the specified group is open.
@@ -14,82 +31,94 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// </summary>
         /// <param name="groupName"></param>
         /// <returns></returns>
-        internal static bool GetGroupExpanded(string groupName)
+        internal static bool GetGroupExpanded(GroupData data, string groupName)
         {
             if (string.IsNullOrEmpty(groupName)) return true;
-            if (GroupExpanded.TryGetValue(groupName, out var expanded))
+            if (data == null) return true;
+            if (data.GroupExpanded.TryGetValue(groupName, out var expanded))
             {
-                UberDrawerLogger.Log("GetGroupExpanded : Existed " + groupName + " : " + expanded);
+                UberDrawerLogger.Log("GetGroupExpanded : Existed " + groupName + " : " + (expanded ? "開いている" : "閉じている"));
                 return expanded;
             }
 
             var defaultValue = false;
-            GroupExpanded.Add(groupName, defaultValue);
-            UberDrawerLogger.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + defaultValue);
+            data.GroupExpanded.Add(groupName, defaultValue);
+            UberDrawerLogger.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + (defaultValue　?　"開いている"　:　"閉じている"));
             return defaultValue;
         }
 
-        internal static void SetGroupExpanded(string groupName, bool state)
+        internal static void SetGroupExpanded(GroupData data, string groupName, bool state)
         {
-            if (string.IsNullOrEmpty(groupName)) return;
-            GroupExpanded[groupName] = state;
+            if (string.IsNullOrEmpty(groupName) || data == null) return;
+            data.GroupExpanded[groupName] = state;
         }
 
-        internal static void PushGroup(string groupName)
+        internal static void PushGroup(GroupData data, string groupName)
         {
-            if (string.IsNullOrEmpty(groupName)) return;
+            if (string.IsNullOrEmpty(groupName) || data == null) return;
             UberDrawerLogger.Log("Push : " + groupName);
-            GroupNest.Push(groupName);
+            data.GroupNest.Push(groupName);
         }
 
-        internal static string PopGroup()
+        internal static string PopGroup(GroupData data)
         {
-            if (GroupNest.Count == 0)
+            if (data == null || data.GroupNest.Count == 0)
             {
                 UberDrawerLogger.LogWarning("Pop called on empty group stack.");
                 return string.Empty;
             }
 
-            var popGroup = GroupNest.Pop();
+            var popGroup = data.GroupNest.Pop();
             UberDrawerLogger.Log("Pop  : " + popGroup);
             return popGroup;
         }
 
-        internal static bool TryPeekGroup(out string groupName)
+        internal static bool TryPeekGroup(GroupData data, out string groupName)
         {
-            if (GroupNest.Count == 0)
+            if (data == null || data.GroupNest.Count == 0)
             {
                 groupName = string.Empty;
                 return false;
             }
 
-            groupName = GroupNest.Peek();
+            groupName = data.GroupNest.Peek();
             return true;
         }
 
-        internal static int GetIndentLevel()
+        internal static int GetIndentLevel(GroupData data)
         {
-            return GroupNest.Count;
+            return data == null ? 0 : Math.Max(0,data.GroupNest.Count-1);
         }
 
-        internal static void ResetAll()
+        internal static void ResetAll(GroupData data)
         {
-            GroupExpanded.Clear();
-            GroupNest.Clear();
+            if (data == null) return;
+            data.GroupExpanded.Clear();
+            data.GroupNest.Clear();
+            data.PushedInPass.Clear();
+            data.PoppedInPass.Clear();
+            data.CurrentPassId = 0;
         }
         
-        internal static bool ParentGroupIsClosed(int indentNum)
+        internal static void ResetNest(GroupData data)
         {
+            if (data == null) return;
+            data.GroupNest.Clear();
+        }
+        
+        internal static bool ParentGroupIsClosed(GroupData data, int indentNum)
+        {
+            if (data == null) return false;
             UberDrawerLogger.Log("indentNum : " + indentNum);
-            UberDrawerLogger.Log("GroupNest : " + GroupNest.Count);
-            var groupArray = GroupNest.Reverse().ToArray();
-            if (GroupNest.Count < indentNum) return false;
+            UberDrawerLogger.Log("GroupNest : " + data.GroupNest.Count);
+            var groupArray = data.GroupNest.Reverse().ToArray();
+            if (data.GroupNest.Count < indentNum) return false;
             UberDrawerLogger.Log("Parents : " + string.Join(", ", groupArray));
             for (var i = 0; i < indentNum; i++)
             {
                 var parentalGroup = groupArray[i];
-                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(parentalGroup) ? "opened" : "closed"));
-                if (!GetGroupExpanded(parentalGroup)) return true;
+                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(data, parentalGroup) ? "opened" : "closed"));
+                if (!GetGroupExpanded(data, parentalGroup)) return true;
             }
             return false;
         }

@@ -45,7 +45,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!UberGroupState.GetGroupExpanded(_groupName))
+            var data = GroupDataCache.GetOrCreate(UberDrawerBase.GetTargetMaterial(editor));
+            if (!UberGroupState.GetGroupExpanded(data, _groupName))
                 return;
 
             // 無限ループしてエディタがクラッシュするのでDefaultShaderPropertyを使用する
@@ -55,7 +56,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            if (!UberGroupState.GetGroupExpanded(_groupName))
+            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
+            var data = GroupDataCache.GetOrCreate(UberDrawerBase.GetTargetMaterial(editor));
+            if (!UberGroupState.GetGroupExpanded(data, _groupName))
                 return GUIHelper.ClosedHeight;
             return MaterialEditor.GetDefaultPropertyHeight(prop);
         }

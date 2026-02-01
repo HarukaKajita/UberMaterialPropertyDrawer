@@ -1,4 +1,6 @@
+using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -14,42 +16,79 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
 
         protected string GroupName { get; }
-        protected int IndentLevel => UberGroupState.GetIndentLevel();
         
         /// <summary>
         /// Returns whether the current group is visible.
         /// True only when all ancestor groups up to the direct parent are visible.
         /// </summary>
         /// <returns></returns>
-        protected bool IsVisibleInGroup()
+        protected bool IsVisibleInGroup(MaterialEditor editor)
         {
+            var data = GetGroupData(editor);
+            if (data == null) return true;
+            var indentLevel = UberGroupState.GetIndentLevel(data);
             if (string.IsNullOrEmpty(GroupName))
-                return !UberGroupState.ParentGroupIsClosed(IndentLevel);
+                return !UberGroupState.ParentGroupIsClosed(data, indentLevel);
 
-            return UberGroupState.GetGroupExpanded(GroupName)
-                   && !UberGroupState.ParentGroupIsClosed(IndentLevel);
+            return UberGroupState.GetGroupExpanded(data, GroupName)
+                   && !UberGroupState.ParentGroupIsClosed(data, indentLevel);
         }
 
-        protected float GetVisibleHeight(float visibleHeight)
+        protected float GetVisibleHeight(float visibleHeight, MaterialEditor editor)
         {
-            return IsVisibleInGroup() ? visibleHeight : GUIHelper.ClosedHeight;
+            return IsVisibleInGroup(editor) ? visibleHeight : GUIHelper.ClosedHeight;
         }
 
-        protected void BeginGroupScope()
+        protected void BeginGroupScope(MaterialEditor editor)
         {
-            UberGroupState.PushGroup(GroupName);
+            UberGroupState.PushGroup(GetGroupData(editor), GroupName);
         }
 
-        protected void EndGroupScope(string expectedGroup)
+        protected void EndGroupScope(MaterialEditor editor, string expectedGroup)
         {
-            var actualGroup = UberGroupState.PopGroup();
+            var actualGroup = UberGroupState.PopGroup(GetGroupData(editor));
             if (!string.IsNullOrEmpty(expectedGroup) && actualGroup != expectedGroup)
                 UberDrawerLogger.LogError("Not Corresponded Group Begin-End : " + actualGroup + " - " + expectedGroup);
         }
 
-        protected bool TryGetParentGroup(out string parentGroup)
+        protected string GetParentGroup(MaterialEditor editor, string groupName)
         {
-            return UberGroupState.TryPeekGroup(out parentGroup);
+            UberDrawerLogger.Log($"GetParentGroup : from {groupName}");
+            // groupNameを考慮して親グループを取得する
+            var groupData = GetGroupData(editor);
+            var groupNest = groupData.GroupNest.ToArray();
+            for (var i = 0; i < groupNest.Length; i++)
+            {
+                UberDrawerLogger.Log($"\t[{i}] : {groupNest[i]} : {groupName == groupNest[i]}");
+                if (groupNest[i] != groupName) continue;
+                if(i < groupNest.Length-1)
+                {
+                    UberDrawerLogger.Log($"\treturn {groupNest[i + 1]}");
+                    return groupNest[i + 1];
+                }
+            }
+            // when i==0 && groupNest[0] == groupName
+            UberDrawerLogger.Log($"\treturn string.Empty");
+            return string.Empty;
+        }
+
+        protected GroupData GetGroupData(MaterialEditor editor)
+        {
+            return GroupDataCache.GetOrCreate(GetTargetMaterial(editor));
+        }
+
+        internal static Material GetTargetMaterial(MaterialEditor editor)
+        {
+            if (editor == null) return null;
+            if (editor.target is Material mat) return mat;
+
+            var targets = editor.targets;
+            if (targets == null) return null;
+            foreach (var target in targets)
+            {
+                if (target is Material m) return m;
+            }
+            return null;
         }
     }
 }

@@ -36,7 +36,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            return GetVisibleHeight(GUIHelper.TexturePropertyHeight);
+            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
+            return GetVisibleHeight(GUIHelper.TexturePropertyHeight, editor);
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -47,9 +48,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return;
             }
 
-            if (!IsVisibleInGroup()) return;
+            if (!IsVisibleInGroup(editor)) return;
 
-            var mat = editor.target as Material;
+            var mat = GetTargetMaterial(editor);
             if (mat == null) return;
 
             var path = AssetDatabase.GetAssetPath(mat);

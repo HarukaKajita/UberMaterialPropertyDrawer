@@ -1,53 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!28 &-783336104295650630
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: _GrandChildGradient_GradientTex
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 2
-  m_Width: 256
-  m_Height: 1
-  m_CompleteImageSize: 1024
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 0
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_LightmapFormat: 0
-  m_ColorSpace: 0
-  m_PlatformBlob: 
-  image data: 1024
-  _typelessdata: 000000ff020200ff040400ff060501ff080701ff0a0901ff0c0b01ff0e0c02ff100e02ff121002ff141202ff161402ff181503ff1a1703ff1c1903ff1e1b03ff201c03ff221e04ff242004ff262204ff282404ff2a2505ff2c2705ff2e2905ff302b05ff322c05ff342e06ff353006ff373206ff393406ff3b3506ff3d3707ff3f3907ff413b07ff433c07ff453e08ff474008ff494208ff4b4408ff4d4508ff4f4709ff514909ff534b09ff554c09ff574e09ff59500aff5b520aff5d540aff5f550aff61570bff63590bff655b0bff675d0bff695e0bff6b600cff6d620cff6f640cff71650cff73670cff75690dff776b0dff796d0dff7b6e0dff7d700eff7f720eff81740eff83750eff85770eff87790fff897b0fff8b7d0fff8d7e0fff8f800fff918210ff938410ff958510ff978710ff998911ff9b8b11ff9d8d11ff9e8e11ffa09011ffa29212ffa49412ffa69512ffa89712ffaa9912ffac9b13ffae9d13ffb09e13ffb2a013ffb4a214ffb6a414ffb8a514ffbaa714ffbca914ffbeab15ffc0ad15ffc2ae15ffc4b015ffc6b215ffc8b416ffcab516ffccb716ffceb916ffd0bb17ffd2bd17ffd4be17ffd6c017ffd8c217ffdac418ffdcc518ffdec718ffe0c918ffe2cb19ffe4cd19ffe6ce19ffe8d019ffead219ffecd41affeed51afff0d71afff2d91afff4db1afff6dd1bfff8de1bfffae01bfffce21bfffee41cffffe51cffffe51effffe520ffffe622ffffe623ffffe625ffffe627ffffe629ffffe72bffffe72cffffe72effffe730ffffe832ffffe834ffffe835ffffe837ffffe839ffffe93bffffe93dffffe93effffe940ffffe942ffffea44ffffea46ffffea47ffffea49ffffea4bffffeb4dffffeb4fffffeb50ffffeb52ffffeb54ffffec56ffffec58ffffec59ffffec5bffffec5dffffed5fffffed61ffffed62ffffed64ffffed66ffffee68ffffee6affffee6bffffee6dffffef6fffffef71ffffef73ffffef74ffffef76fffff078fffff07afffff07cfffff07dfffff07ffffff181fffff183fffff185fffff186fffff188fffff28afffff28cfffff28efffff28ffffff291fffff393fffff395fffff397fffff398fffff39afffff49cfffff49efffff4a0fffff4a1fffff4a3fffff5a5fffff5a7fffff5a9fffff5aafffff6acfffff6aefffff6b0fffff6b2fffff6b3fffff7b5fffff7b7fffff7b9fffff7bbfffff7bcfffff8befffff8c0fffff8c2fffff8c4fffff8c5fffff9c7fffff9c9fffff9cbfffff9cdfffff9cefffffad0fffffad2fffffad4fffffad6fffffad7fffffbd9fffffbdbfffffbddfffffbdffffffbe0fffffce2fffffce4fffffce6fffffce8fffffde9fffffdebfffffdedfffffdeffffffdf1fffffef2fffffef4fffffef6fffffef8fffffefafffffffbfffffffdffffffffff
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -92,7 +44,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _GrandChildGradient:
-        m_Texture: {fileID: -783336104295650630}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -109,6 +61,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaChannel: 3
     - _Ambient: 0.5
     - _BeginBevelDummy: 0
     - _BeginBumpMapDummy: 0
@@ -119,6 +72,7 @@ Material:
     - _BeginGroundChild: 1
     - _BeginLightingDummy: 0
     - _BeginLocalLightingDummy: 0
+    - _BeginMiscDummy: 0
     - _BeginOutlineDummy: 0
     - _BeginUnderlayDummy: 0
     - _Bevel: 0.5
@@ -131,8 +85,12 @@ Material:
     - _ColorMask: 15
     - _CullMode: 0
     - _Diffuse: 0.5
+    - _EndA: 0
+    - _EndB: 0
     - _EndBevelDummy: 0
     - _EndBumpMapDummy: 0
+    - _EndC: 0
+    - _EndD: 0
     - _EndDebugSettingDummy: 0
     - _EndEnvironmentReflectionDummy: 0
     - _EndFaceDummy: 0
@@ -140,6 +98,7 @@ Material:
     - _EndGroundChild: 0
     - _EndLightingDummy: 0
     - _EndLocalLightingDummy: 0
+    - _EndMiscDummy: 0
     - _EndNestGroup: 0
     - _EndOutlineDummy: 0
     - _EndSomGroup: 0
@@ -152,7 +111,6 @@ Material:
     - _GlowOuter: 0.05
     - _GlowPower: 0.75
     - _GradientScale: 5
-    - _Init: 0
     - _LightAngle: 3.1416
     - _MaskSoftnessX: 0
     - _MaskSoftnessY: 0
@@ -184,6 +142,11 @@ Material:
     - _UnderlayOffsetX: 0
     - _UnderlayOffsetY: 0
     - _UnderlaySoftness: 0
+    - _UseA: 1
+    - _UseB: 1
+    - _UseC: 1
+    - _UseD: 1
+    - _UseGrandChildSomeFeature: 1
     - _UseNestFeature: 1
     - _UseSomeFeature: 1
     - _VertexOffsetX: 0
@@ -203,156 +166,5 @@ Material:
     - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+    - _Vec2Test: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &1424087417711169676
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7232dc7f22b74ad0a5219a5fab8a54f, type: 3}
-  m_Name: _GrandChildCurve_CurveData
-  m_EditorClassIdentifier: 
-  curveR:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  curveG:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  curveB:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  curveA:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  texture: {fileID: 0}
---- !u!114 &9097142069613261956
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 205b5af0b309b403ca91b36ed0c7564c, type: 3}
-  m_Name: _GrandChildGradient_GradientData
-  m_EditorClassIdentifier: 
-  gradient:
-    serializedVersion: 2
-    key0: {r: 0, g: 0, b: 0, a: 1}
-    key1: {r: 1, g: 0.8979237, b: 0.10849059, a: 1}
-    key2: {r: 1, g: 1, b: 1, a: 1}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 33079
-    ctime2: 65535
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 65535
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 3
-    m_NumAlphaKeys: 2
-  texture: {fileID: -783336104295650630}
