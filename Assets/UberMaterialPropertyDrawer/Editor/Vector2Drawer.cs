@@ -22,7 +22,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             if (!IsVisibleInGroup(editor)) return;
-
+            MaterialEditor.BeginProperty(position,prop);    
             var propName = ObjectNames.NicifyVariableName(label.text);
             var totalIndentSize = EditorGUI.indentLevel * GUIHelper.IndentWidth;
             var labelWidth = position.width * 0.3f;
@@ -38,6 +38,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             EditorGUIUtility.labelWidth = tmp_labelWidth;
             EditorGUIUtility.fieldWidth = tmp_fieldWidth;
             EditorGUIUtility.wideMode = false;
+            MaterialEditor.EndProperty();
         }
     }
 }

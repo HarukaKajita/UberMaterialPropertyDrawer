@@ -22,7 +22,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             if (!IsVisibleInGroup(editor)) return;
-
+            MaterialEditor.BeginProperty(position, prop);    
             var propName = ObjectNames.NicifyVariableName(label.text);
 
             EditorGUI.BeginChangeCheck();
@@ -35,6 +35,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (EditorGUI.EndChangeCheck())
                 Util.SetBool(prop, toggleValue);
+            MaterialEditor.EndProperty();
         }
     }
 }

@@ -84,6 +84,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
 
             EditorGUI.BeginChangeCheck();
+            MaterialEditor.BeginProperty(position, prop);
 
             // Label GUI
             var indentSize = GUIHelper.IndentWidth;
@@ -146,6 +147,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 prop.textureValue = data.texture;
                 EditorUtility.SetDirty(mat);
             }
+            MaterialEditor.EndProperty();
         }
 
         private TextureFormat PickCorrectTextureFormat()

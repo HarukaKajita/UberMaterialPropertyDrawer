@@ -113,6 +113,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return;
             }
 
+            MaterialEditor.BeginProperty(position, prop);
             if (prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
             {
                 EditorGUI.showMixedValue = prop.hasMixedValue;
@@ -156,6 +157,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.showMixedValue = false;
                 prop.intValue = _values[selIndex];
             }
+            MaterialEditor.EndProperty();
         }
     }
 }

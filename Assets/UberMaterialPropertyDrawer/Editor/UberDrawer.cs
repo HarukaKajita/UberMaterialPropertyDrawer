@@ -18,9 +18,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (!UberGroupState.GetGroupExpanded(data, _groupName))
                 return;
 
+            MaterialEditor.BeginProperty(position, prop);
             // 無限ループしてエディタがクラッシュするのでDefaultShaderPropertyを使用する
             // editor.ShaderProperty(position, prop, ObjectNames.NicifyVariableName(prop.name));
             editor.DefaultShaderProperty(position, prop, prop.displayName);
+            MaterialEditor.EndProperty();
         }
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)

@@ -50,6 +50,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded, int indentNum)
         {
             UberDrawerLogger.Log($"BeginPanel : {GroupName} - {_memo}");
+            MaterialEditor.BeginProperty(position,prop);
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
             style.fixedHeight = GUIHelper.GroupHeaderHeight; // Background height.
@@ -75,6 +76,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 expanded = !expanded;
                 e.Use();
             }
+            MaterialEditor.EndProperty();
             return expanded;
         }
 
