@@ -112,51 +112,23 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.LabelField(position, _errorLabel);
                 return;
             }
-
             MaterialEditor.BeginProperty(position, prop);
-            if (prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+            var value = Util.GetInt(prop);
+            var selectedIndex = -1;
+            for (var index = 0; index < _values.Length; index++)
             {
-                EditorGUI.showMixedValue = prop.hasMixedValue;
-
-                var value = (int)prop.floatValue;
-                int selectedIndex = -1;
-                for (var index = 0; index < _values.Length; index++)
+                var i = _values[index];
+                if (i == value)
                 {
-                    var i = _values[index];
-                    if (i == value)
-                    {
-                        selectedIndex = index;
-                        break;
-                    }
+                    selectedIndex = index;
+                    break;
                 }
-
-                var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
-                EditorGUI.showMixedValue = false;
-                if (prop.type == MaterialProperty.PropType.Float || prop.type == MaterialProperty.PropType.Range)
-                    prop.floatValue = _values[selIndex];
-                else if (prop.type == MaterialProperty.PropType.Int)
-                    prop.intValue = _values[selIndex];
             }
-            else
-            {
-                EditorGUI.showMixedValue = prop.hasMixedValue;
 
-                var value = prop.intValue;
-                int selectedIndex = -1;
-                for (var index = 0; index < _values.Length; index++)
-                {
-                    var i = _values[index];
-                    if (i == value)
-                    {
-                        selectedIndex = index;
-                        break;
-                    }
-                }
-
-                var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
-                EditorGUI.showMixedValue = false;
-                prop.intValue = _values[selIndex];
-            }
+            var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
+            EditorGUI.showMixedValue = false;
+            Util.SetInt(prop, _values[selIndex]);
             MaterialEditor.EndProperty();
         }
     }

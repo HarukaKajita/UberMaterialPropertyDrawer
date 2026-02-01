@@ -5,7 +5,30 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public static class Util
     {
-        public static bool GetBool(MaterialProperty prop)
+        public static int GetInt(MaterialProperty prop)
+        {
+            if (prop.type == MaterialProperty.PropType.Int)
+                return prop.intValue;
+            else if(prop.type == MaterialProperty.PropType.Float)
+                return (int)prop.floatValue;
+            else if(prop.type == MaterialProperty.PropType.Range)
+                return (int)prop.floatValue;
+            Debug.LogError("Unsupported property type: " + prop.type);
+            return 0;
+        }
+        public static void SetInt(MaterialProperty prop, int value)
+        {
+            if (prop.type == MaterialProperty.PropType.Int)
+                prop.intValue = value;
+            else if(prop.type == MaterialProperty.PropType.Float)
+                prop.floatValue = value;
+            else if(prop.type == MaterialProperty.PropType.Range)
+                prop.floatValue = value;
+            else
+                Debug.LogError("Unsupported property type: " + prop.type);
+        }
+        
+        public static bool GetAsBool(MaterialProperty prop)
         {
             if (prop.type == MaterialProperty.PropType.Int)
                 return prop.intValue != 0;
