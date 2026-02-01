@@ -20,12 +20,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (args == null || args.Length == 0) return;
             foreach (var argStr in args)
             {
-                if (argStr.StartsWith("ch"))
-                    _channelNum = int.Parse(argStr[2..]);
-                else if (argStr.StartsWith("res"))
-                    _resolution = int.Parse(argStr[3..]);
-                else if (argStr.StartsWith("bit"))
-                    _useHalfTexture = int.Parse(argStr[3..]) == 16;
+                if (argStr.StartsWith("ch")) _channelNum = int.Parse(argStr[2..]);
+                else if (argStr.StartsWith("res")) _resolution = int.Parse(argStr[3..]);
+                else if (argStr.StartsWith("bit")) _useHalfTexture = int.Parse(argStr[3..]) == 16;
             }
         }
 
@@ -59,8 +56,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 data = ScriptableObject.CreateInstance<GradientTextureData>();
                 data.name = dataName;
                 AssetDatabase.AddObjectToAsset(data, mat);
-                AssetDatabase.ImportAsset(path);
+                data.texture = BakeTexture(data, GradientTexName(prop));
+                prop.textureValue = data.texture;
+                AssetDatabase.AddObjectToAsset(data.texture, mat);
+                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(mat);
+                EditorApplication.delayCall += () =>
+                {
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.ImportAsset(path);
+                };
                 subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
+                // return;
             }
 
             if (data.texture == null && prop.textureValue != null)
@@ -109,7 +116,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                var tex = BakeTexture(data);
+                var tex = BakeTexture(data, GradientTexName(prop));
                 tex.name = GradientTexName(prop);
                 if (!subAssetsInMat.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
@@ -151,17 +158,21 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private bool IsChangedTextureSettings(GradientTextureData data)
         {
+            if (data.texture == null) return true;
             var format = PickCorrectTextureFormat();
             return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
         }
 
-        private Texture2D BakeTexture(GradientTextureData data)
+        private Texture2D BakeTexture(GradientTextureData data, string texName)
         {
             var format = PickCorrectTextureFormat();
 
             var tex = data.texture;
             if (tex == null)
+            {
                 tex = new Texture2D(_resolution, 1, format, true, true);
+                tex.name = texName;
+            }
             else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
                 tex.Reinitialize(_resolution, 1, format, true);
 

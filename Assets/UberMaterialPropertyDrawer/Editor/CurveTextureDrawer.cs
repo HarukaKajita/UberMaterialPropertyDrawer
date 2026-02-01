@@ -21,14 +21,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (args == null || args.Length == 0) return;
             foreach (var argStr in args)
             {
-                if (argStr.StartsWith("ch"))
-                    _channelNum = int.Parse(argStr[2..]);
-                else if (argStr.StartsWith("res"))
-                    _resolution = int.Parse(argStr[3..]);
-                else if (argStr.StartsWith("bit"))
-                    _useHalfTexture = int.Parse(argStr[3..]) == 16;
-                else if (argStr == "accum")
-                    _accumulate = true;
+                if (argStr.StartsWith("ch")) _channelNum = int.Parse(argStr[2..]);
+                else if (argStr.StartsWith("res")) _resolution = int.Parse(argStr[3..]);
+                else if (argStr.StartsWith("bit")) _useHalfTexture = int.Parse(argStr[3..]) == 16;
+                else if (argStr == "accum") _accumulate = true;
             }
         }
 
@@ -62,8 +58,19 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 data = ScriptableObject.CreateInstance<CurveTextureData>();
                 data.name = dataName;
                 AssetDatabase.AddObjectToAsset(data, mat);
-                AssetDatabase.ImportAsset(path);
+                data.texture = BakeTexture(data, CurveTexName(prop));
+                prop.textureValue = data.texture;
+                AssetDatabase.AddObjectToAsset(data.texture, mat);
+                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(mat);
+                EditorApplication.delayCall += () =>
+                {
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.ImportAsset(path);
+                };
                 subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+                
+                // return;
             }
 
             if (data.texture == null && prop.textureValue != null)
@@ -85,11 +92,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var labelRect = new Rect(position.x, position.y, labelWidth, GUIHelper.SingleLineHeight);
             EditorGUI.LabelField(labelRect, propName);
 
+            // Curve GUI
             var valueWidth = position.width - labelRect.width + indentSize * 2;
             var valueX = labelRect.width;
-            // Curve GUI
             var curveRect = new Rect(valueX, position.y, valueWidth / 4, GUIHelper.TexturePropertyHeight / 4);
-
             data.curveR = EditorGUI.CurveField(curveRect, "", data.curveR);
             curveRect.y += curveRect.height;
             data.curveG = EditorGUI.CurveField(curveRect, "", data.curveG);
@@ -122,7 +128,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                var tex = BakeTexture(data);
+                var tex = BakeTexture(data, CurveTexName(prop));
                 tex.name = CurveTexName(prop);
                 if (!subAssets.Contains(tex))
                     AssetDatabase.AddObjectToAsset(tex, mat);
@@ -164,17 +170,21 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private bool IsChangedTextureSettings(CurveTextureData data)
         {
+            if (data.texture == null) return true;
             var format = PickCorrectTextureFormat();
             return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
         }
 
-        private Texture2D BakeTexture(CurveTextureData data)
+        private Texture2D BakeTexture(CurveTextureData data, string texName)
         {
             var format = PickCorrectTextureFormat();
 
             var tex = data.texture;
             if (tex == null)
+            {
                 tex = new Texture2D(_resolution, 1, format, true, true);
+                tex.name = texName;
+            }
             else if (tex.width != _resolution || tex.height != 1 || tex.format != format)
                 tex.Reinitialize(_resolution, 1, format, true);
 
