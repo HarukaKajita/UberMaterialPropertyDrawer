@@ -6,6 +6,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     public static class Util
     {
+        public static string GetPropertyTooltip(MaterialProperty prop)
+        {
+            return $"{prop.type} : {prop.name}";
+        }
         public static int GetInt(MaterialProperty prop)
         {
             if (prop.type == MaterialProperty.PropType.Int)
