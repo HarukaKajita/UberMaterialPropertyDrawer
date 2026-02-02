@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,6 +45,28 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             prop.intValue = value ? 1 : 0;
             prop.floatValue = value ? 1 : 0;
+        }
+        
+        public static Object[] FetchSubAssets(Material mat)
+        {
+            var path = AssetDatabase.GetAssetPath(mat);
+            return AssetDatabase.LoadAllAssetsAtPath(path);
+        }
+        
+        public static Texture2D FetchSubAssetTexture(Material mat, string textureName)
+        {
+            var subAssets = FetchSubAssets(mat);
+            return subAssets.OfType<Texture2D>().FirstOrDefault(a => a.name == textureName);
+        }
+        
+        public static void DelaySaveAsset(Material mat)
+        {
+            EditorApplication.delayCall += () =>
+            {
+                var path = AssetDatabase.GetAssetPath(mat);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.ImportAsset(path);
+            };
         }
     }
 }

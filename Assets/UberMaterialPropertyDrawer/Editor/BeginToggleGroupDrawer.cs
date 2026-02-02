@@ -33,7 +33,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var data = GetGroupData(editor);
-            var indentNum = UberGroupState.GetIndentLevel(data);
             if (TryBeginGroup(data, prop))
                 BeginGroupScope(editor);
             var parentGroup = GetParentGroup(editor, GroupName);
@@ -41,31 +40,45 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             _memo = $" parent:{parentGroup}";
             UberDrawerLogger.Log(GroupName + "のParent" + parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
             var newState = false;
-            if (!parentIsClosed) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(data, GroupName), indentNum);
+            if (!parentIsClosed) newState = BeginPanel(position, editor, prop, UberGroupState.GetGroupExpanded(data, GroupName));
             EditorGUI.indentLevel++;
             UberGroupState.SetGroupExpanded(data, GroupName, newState);
             
         }
 
-        private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded, int indentNum)
+        private bool BeginPanel(Rect position, MaterialEditor editor, MaterialProperty prop, bool expanded)
         {
             UberDrawerLogger.Log($"BeginPanel : {GroupName} - {_memo}");
             MaterialEditor.BeginProperty(position,prop);
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+            
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
             style.fixedHeight = GUIHelper.GroupHeaderHeight; // Background height.
             position.y += GUIHelper.GroupHeaderTopPadding;
-            var indentOffset = GUIHelper.IndentWidth * indentNum;
-            var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset, style.fixedHeight);
-            GUI.Box(bgRect, "", style);
+            var bgRect = EditorGUI.IndentedRect(position);
+            bgRect.height = style.fixedHeight;
+            GUI.Box(bgRect, "", style); // background
+            
+            var toggleState = Util.GetAsBool(prop);
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
+            var toggleRect = position;
+            toggleRect.x += buttonLeftMargin;
+            toggleRect.width = toggleRect.height = buttonWidth;
+            // EditorGUIは自動で内部でインデントを自動処理する。
+            // xを増やして、その分幅を狭くすることでインデントを表現する。
+            // 幅が狭くなる影響でトグルのインタラクション領域がなくなって機能しなくなる。
+            // インデントで狭くなる分の幅を予め余分に加えておくことで、幅が狭くなる影響を防ぐ。
+            toggleRect.width += EditorGUI.indentLevel * GUIHelper.IndentWidth;
+            toggleState = EditorGUI.Toggle(toggleRect, toggleState);
 
-            var toggleState = Util.GetAsBool(prop);
-            toggleState = GUI.Toggle(new Rect(bgRect.x + 2, position.y + 0.5f, buttonWidth, 18), toggleState, "");
-            Util.SetBool(prop, toggleState);
-
-            EditorGUI.LabelField(new Rect(position.x + 20f, position.y, 300, 18), GroupName + ":" + _memo, EditorStyles.boldLabel);
+            var labelRect = toggleRect;
+            labelRect.x += buttonWidth + buttonLeftMargin;
+            labelRect.width = 300;
+            labelRect.height = 18;
+            EditorGUI.LabelField(labelRect, GroupName + ":" + _memo, EditorStyles.boldLabel);
 
             var interactiveRect = bgRect;
             interactiveRect.x += buttonWidth + buttonLeftMargin;
@@ -76,7 +89,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 expanded = !expanded;
                 e.Use();
             }
+            
+            EditorGUI.showMixedValue = false;
+            if (EditorGUI.EndChangeCheck())
+            {
+                editor.RegisterPropertyChangeUndo(prop.name);
+                Util.SetBool(prop, toggleState);
+            }
             MaterialEditor.EndProperty();
+            
             return expanded;
         }
 

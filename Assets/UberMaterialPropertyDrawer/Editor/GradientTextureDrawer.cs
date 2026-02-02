@@ -25,63 +25,136 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 else if (argStr.StartsWith("bit")) _useHalfTexture = int.Parse(argStr[3..]) == 16;
             }
         }
-
-        private string GradientTexName(MaterialProperty prop) => prop.name + "_GradientTex";
-
+        
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
             return GetVisibleHeight(GUIHelper.TexturePropertyHeight, editor);
         }
+        
+        private string GradientTexName(string propName) => propName + "_GradientTex";
+        private string GradientDataName(string propName) => propName + "_GradientData";
+        
+        private GradientTextureData FetchGradientTextureData(string propName, Material mat)
+        {
+            var subAssets = Util.FetchSubAssets(mat);
+            var dataName = GradientDataName(propName);
+            var data = subAssets.OfType<GradientTextureData>().FirstOrDefault(a => a.name == dataName);
+            return data;
+        }
+        
+        private GradientTextureData[] FetchGradientTextureDataArray(MaterialProperty prop)
+        {
+            var data = 
+                prop.targets.
+                    OfType<Material>().
+                    Select(e => FetchGradientTextureData(prop.name, e));
+            return data.ToArray();
+        }
+
+        
+        /// <summary>
+        /// Initialize sub assets if need.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns> true if sub assets are initialized. false if sub assets are not initialized.</returns>
+        private bool InitSubAssetsIfNeed(MaterialProperty prop)
+        {
+            var initialized = true;
+            var targets = prop.targets;
+            foreach (var target in targets)
+            {
+                if (target is not Material mat)continue;
+                var data = FetchGradientTextureData(prop.name, mat);
+                var dataName = GradientDataName(prop.name);    
+                if (data == null)
+                {
+                    initialized = false;
+                    data = ScriptableObject.CreateInstance<GradientTextureData>();
+                    data.name = dataName;
+                    AssetDatabase.AddObjectToAsset(data, mat);
+                    AssetDatabase.AddObjectToAsset(data.texture, mat);
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(mat);
+                    Util.DelaySaveAsset(mat);
+                }
+                // Textureが初期化されているか確認。subAssetのテクスチャとGradientTextureData.textureが一致する状態にする
+                var subAssetTex = Util.FetchSubAssetTexture(mat, GradientTexName(prop.name));
+                if (data.texture == null || subAssetTex == null || data.texture != subAssetTex)
+                {
+                  initialized = false;
+                  if (subAssetTex != null)
+                  {
+                      data.texture = subAssetTex;
+                      mat.SetTexture(prop.name, subAssetTex);
+                  }
+                  else
+                  {
+                      data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop.name));
+                      mat.SetTexture(prop.name, data.texture);
+                      AssetDatabase.AddObjectToAsset(data.texture, mat);
+                      Util.DelaySaveAsset(mat);
+                  }
+                  EditorUtility.SetDirty(data);
+                  EditorUtility.SetDirty(mat);
+                } 
+            }
+            return initialized;
+        }
+
+        /// <summary>
+        /// Ensure texture consistency between material and curve texture data.
+        /// MaterialのTexturePropertyとCurveTextureDataのTextureとMaterialのSubAssetのTextureが一致することを保証する。
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns> true if texture is consistent. false if texture is not consistent.</returns>
+        private bool EnsureTextureConsistency(MaterialProperty prop)
+        {
+            var consistent = true;
+            var targets = prop.targets;
+            foreach (var target in targets)
+            {
+                if (target is not Material mat) continue;
+                var data = FetchGradientTextureData(prop.name, mat);
+                var materialTextureValue = mat.GetTexture(prop.name);
+                var subAssetTex = Util.FetchSubAssetTexture(mat, GradientTexName(prop.name));
+                if (data.texture != materialTextureValue)
+                {
+                    consistent = false;
+                    data.texture = subAssetTex;
+                    mat.SetTexture(prop.name, subAssetTex);
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(mat);
+                }
+            }
+            return consistent;
+        }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
+            if (!IsVisibleInGroup(editor)) return;
             if (prop.type != MaterialProperty.PropType.Texture)
             {
                 EditorGUI.LabelField(position, "GradientTexture used on non-texture property");
                 return;
             }
-
-            if (!IsVisibleInGroup(editor)) return;
-
-            var mat = GetTargetMaterial(editor);
-            if (mat == null) return;
-
-            var path = AssetDatabase.GetAssetPath(mat);
-            var subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
-            var dataName = prop.name + "_GradientData";
-            var data = subAssetsInMat.OfType<GradientTextureData>().FirstOrDefault(a => a.name == dataName);
-            if (data == null)
-            {
-                data = ScriptableObject.CreateInstance<GradientTextureData>();
-                data.name = dataName;
-                AssetDatabase.AddObjectToAsset(data, mat);
-                data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop));
-                prop.textureValue = data.texture;
-                AssetDatabase.AddObjectToAsset(data.texture, mat);
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(mat);
-                EditorApplication.delayCall += () =>
-                {
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.ImportAsset(path);
-                };
-                subAssetsInMat = AssetDatabase.LoadAllAssetsAtPath(path);
-                // return;
-            }
-
-            if (data.texture == null && prop.textureValue != null)
-            {
-                var texName = GradientTexName(prop);
-                var subAssetTex = subAssetsInMat.OfType<Texture2D>().FirstOrDefault(a => a.name == texName);
-                data.texture = subAssetTex;
-                prop.textureValue = subAssetTex;
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(mat);
-            }
-
-            EditorGUI.BeginChangeCheck();
+            
+            // アセットの保存タイミングの影響で初期化が完了するまで遅延がある
+            // アセットが正常に初期化されるまでGUIを表示しない
+            var initialized = InitSubAssetsIfNeed(prop);
+            if (!initialized) return;
+            var consistent = EnsureTextureConsistency(prop);
+            if (!consistent) return;
+            
+            // GradientをUndo対象にするにはSerializedPropertyを使用する必要がある
+            var dataArray = FetchGradientTextureDataArray(prop);
+            var dataSo = new SerializedObject(dataArray.ToArray<Object>());
+            dataSo.Update();
+            var gradientSp = dataSo.FindProperty("gradient");
+            
             MaterialEditor.BeginProperty(position, prop);
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = prop.hasMixedValue;
             
             // Label GUI
             var indentSize = GUIHelper.IndentWidth;
@@ -94,9 +167,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var valueX = labelRect.width;
 
             // Gradient GUI
+            // When EditorGUI.PropertyField is called, EditorGUI.EndChangeCheck() will return true.
             var gradientRect = new Rect(valueX, position.y, valueWidth / 4, GUIHelper.SingleLineHeight);
-            data.gradient = EditorGUI.GradientField(gradientRect, "", data.gradient);
-
+            EditorGUI.PropertyField(gradientRect, gradientSp, GUIContent.none);
+            dataSo.ApplyModifiedProperties();
+            
             // Texture GUI
             var texturePropWidth = GUIHelper.TexturePropertyHeight;
             var textureRect = new Rect(gradientRect.xMax, position.y, texturePropWidth, texturePropWidth);
@@ -112,29 +187,28 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var tilingOffsetRect = new Rect(tillingOffsetX, tillingOffsetY, width, tillingOffsetHeight);
             editor.TextureScaleOffsetProperty(tilingOffsetRect, prop, true);
 
+            EditorGUI.showMixedValue = false;
             // When changed shader lab property attribute value.(ex: resolution, channel num, bit)
-            var isChangedTextureSettings = IsChangedTextureSettings(data);
-
+            var isChangedTextureSettings = IsInconsistentTextureSettings(dataArray);
+            
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop));
-                var tex = data.texture;
-                if (!subAssetsInMat.Contains(tex))
-                    AssetDatabase.AddObjectToAsset(tex, mat);
-                data.texture = tex;
-                prop.textureValue = tex;
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(tex);
-                EditorUtility.SetDirty(mat);
-                // AssetDatabase.ImportAsset(path);
-                // AssetDatabase.SaveAssets();
-            }
+                var textures = dataArray.Select(e => e.texture).ToArray<Object>();
+                // Register property change undo before bake texture.
+                editor.RegisterPropertyChangeUndo(propName);
+                Undo.RecordObjects(textures, "Bake Gradient Texture");
 
-            if (data.texture != null && prop.textureValue != data.texture)
-            {
-                prop.textureValue = data.texture;
-                EditorUtility.SetDirty(mat);
+                foreach (var target in prop.targets)
+                {
+                    if (target is not Material mat) continue;
+                    var data = FetchGradientTextureData(prop.name, mat);
+                    data.BakeTexture(_resolution, PickCorrectTextureFormat(), GradientTexName(prop.name));
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(data.texture);
+                    EditorUtility.SetDirty(mat);   
+                }
             }
+            
             MaterialEditor.EndProperty();
         }
 
@@ -158,11 +232,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return format;
         }
 
-        private bool IsChangedTextureSettings(GradientTextureData data)
+        private bool IsInconsistentTextureSettings(GradientTextureData[] dataArray)
         {
-            if (data.texture == null) return true;
-            var format = PickCorrectTextureFormat();
-            return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
+            foreach (var data in dataArray)
+            {
+                if (data.texture == null) return true;
+                var format = PickCorrectTextureFormat();
+                if (data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format)
+                    return true;
+            }
+            return false;
         }
     }
 }

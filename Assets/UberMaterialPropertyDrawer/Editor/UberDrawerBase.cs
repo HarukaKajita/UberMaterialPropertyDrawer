@@ -26,7 +26,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             var data = GetGroupData(editor);
             if (data == null) return true;
-            var indentLevel = UberGroupState.GetIndentLevel(data);
+            var indentLevel = UberGroupState.GetGroupIndentLevel(data);
             if (string.IsNullOrEmpty(GroupName))
                 return !UberGroupState.ParentGroupIsClosed(data, indentLevel);
 

@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Android;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -27,65 +28,138 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 else if (argStr == "accum") _accumulate = true;
             }
         }
-
-        private string CurveTexName(MaterialProperty prop) => prop.name + "_CurveTex";
-
+        
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
             return GetVisibleHeight(GUIHelper.TexturePropertyHeight, editor);
         }
 
+        private string CurveTexName(string propName) => propName + "_CurveTex";
+        private string CurveDataName(string propName) => propName + "_CurveData";
+        
+        private CurveTextureData FetchCurveTextureData(string propName, Material mat)
+        {
+            var subAssets = Util.FetchSubAssets(mat);
+            var dataName = CurveDataName(propName);
+            var data = subAssets.OfType<CurveTextureData>().FirstOrDefault(a => a.name == dataName);
+            return data;
+        }
+        
+        private CurveTextureData[] FetchCurveTextureDataArray(MaterialProperty prop)
+        {
+            var data = 
+                prop.targets.
+                    OfType<Material>().
+                    Select(e => FetchCurveTextureData(prop.name, e));
+            return data.ToArray();
+        }
+
+        /// <summary>
+        /// Initialize sub assets if need.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns> true if sub assets are initialized. false if sub assets are not initialized.</returns>
+        private bool InitSubAssetsIfNeed(MaterialProperty prop)
+        {
+            var initialized = true;
+            var targets = prop.targets;
+            foreach (var target in targets)
+            {
+                if (target is not Material mat)continue;
+                var data = FetchCurveTextureData(prop.name, mat);
+                var dataName = CurveDataName(prop.name);    
+                if (data == null)
+                {
+                    initialized = false;
+                    data = ScriptableObject.CreateInstance<CurveTextureData>();
+                    data.name = dataName;
+                    AssetDatabase.AddObjectToAsset(data, mat);
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(mat);
+                    Util.DelaySaveAsset(mat);
+                }
+                // Textureが初期化されているか確認。subAssetのテクスチャとCurveTextureData.textureが一致する状態にする
+                var subAssetTex = Util.FetchSubAssetTexture(mat, CurveTexName(prop.name));
+                if (data.texture == null || subAssetTex == null || data.texture != subAssetTex)
+                {
+                    initialized = false;
+                    if (subAssetTex != null)
+                    {
+                        data.texture = subAssetTex;
+                        mat.SetTexture(prop.name, subAssetTex);
+                    }
+                    else
+                    {
+                        data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop.name));
+                        mat.SetTexture(prop.name, data.texture);
+                        AssetDatabase.AddObjectToAsset(data.texture, mat);
+                        Util.DelaySaveAsset(mat);
+                    }
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(mat);
+                }
+            }
+            return initialized;
+        }
+
+        /// <summary>
+        /// Ensure texture consistency between material and curve texture data.
+        /// MaterialのTexturePropertyとCurveTextureDataのTextureとMaterialのSubAssetのTextureが一致することを保証する。
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns> true if texture is consistent. false if texture is not consistent.</returns>
+        private bool EnsureTextureConsistency(MaterialProperty prop)
+        {
+            var consistent = true;
+            var targets = prop.targets;
+            foreach (var target in targets)
+            {
+                if (target is not Material mat) continue;
+                var data = FetchCurveTextureData(prop.name, mat);
+                var materialTextureValue = mat.GetTexture(prop.name);
+                var subAssetTex = Util.FetchSubAssetTexture(mat, CurveTexName(prop.name));
+                if (data.texture != materialTextureValue)
+                {
+                    consistent = false;
+                    data.texture = subAssetTex;
+                    mat.SetTexture(prop.name, subAssetTex);
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(mat);
+                }
+            }
+            return consistent;
+        }
+
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
+            if (!IsVisibleInGroup(editor)) return;
             if (prop.type != MaterialProperty.PropType.Texture)
             {
                 EditorGUI.LabelField(position, "CurveTexture used on non-texture property");
                 return;
             }
-
-            if (!IsVisibleInGroup(editor)) return;
-
-            var mat = GetTargetMaterial(editor);
-            if (mat == null) return;
-
-            var path = AssetDatabase.GetAssetPath(mat);
-            var subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
-            var dataName = prop.name + "_CurveData";
-            var data = subAssets.OfType<CurveTextureData>().FirstOrDefault(a => a.name == dataName);
-            if (data == null)
-            {
-                data = ScriptableObject.CreateInstance<CurveTextureData>();
-                data.name = dataName;
-                AssetDatabase.AddObjectToAsset(data, mat);
-                data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop));
-                prop.textureValue = data.texture;
-                AssetDatabase.AddObjectToAsset(data.texture, mat);
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(mat);
-                EditorApplication.delayCall += () =>
-                {
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.ImportAsset(path);
-                };
-                subAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            
+            // アセットの保存タイミングの影響で初期化が完了するまで遅延がある
+            // アセットが正常に初期化されるまでGUIを表示しない
+            var initialized = InitSubAssetsIfNeed(prop);
+            if (!initialized) return;
+            var consistent = EnsureTextureConsistency(prop);
+            if (!consistent) return;
+            
+            // CurveをUndo対象にするにはSerializedPropertyを使用する必要がある
+            var dataArray = FetchCurveTextureDataArray(prop);
+            var dataSo = new SerializedObject(dataArray.ToArray<Object>());
+            dataSo.Update();
+            var curveRSp = dataSo.FindProperty("curveR");
+            var curveGSp = dataSo.FindProperty("curveG");
+            var curveBSp = dataSo.FindProperty("curveB");
+            var curveASp = dataSo.FindProperty("curveA");
                 
-                // return;
-            }
-
-            if (data.texture == null && prop.textureValue != null)
-            {
-                var texName = CurveTexName(prop);
-                var subAssetTex = subAssets.OfType<Texture2D>().FirstOrDefault(a => a.name == texName);
-                data.texture = subAssetTex;
-                prop.textureValue = subAssetTex;
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(mat);
-            }
-
-            EditorGUI.BeginChangeCheck();
             MaterialEditor.BeginProperty(position, prop);
-
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+            
             // Label GUI
             var indentSize = GUIHelper.IndentWidth;
             var propName = ObjectNames.NicifyVariableName(label.text);
@@ -94,17 +168,19 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             EditorGUI.LabelField(labelRect, propName);
 
             // Curve GUI
+            // When EditorGUI.PropertyField is called, EditorGUI.EndChangeCheck() will return true.
             var valueWidth = position.width - labelRect.width + indentSize * 2;
             var valueX = labelRect.width;
             var curveRect = new Rect(valueX, position.y, valueWidth / 4, GUIHelper.TexturePropertyHeight / 4);
-            data.curveR = EditorGUI.CurveField(curveRect, "", data.curveR);
+            EditorGUI.PropertyField(curveRect, curveRSp, GUIContent.none);
             curveRect.y += curveRect.height;
-            data.curveG = EditorGUI.CurveField(curveRect, "", data.curveG);
+            EditorGUI.PropertyField(curveRect, curveGSp, GUIContent.none);
             curveRect.y += curveRect.height;
-            data.curveB = EditorGUI.CurveField(curveRect, "", data.curveB);
+            EditorGUI.PropertyField(curveRect, curveBSp, GUIContent.none);
             curveRect.y += curveRect.height;
-            data.curveA = EditorGUI.CurveField(curveRect, "", data.curveA);
+            EditorGUI.PropertyField(curveRect, curveASp, GUIContent.none);
             curveRect.y += curveRect.height;
+            dataSo.ApplyModifiedProperties();
 
             // Texture GUI
             EditorGUI.BeginDisabledGroup(true);
@@ -124,29 +200,28 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             tilingOffsetRect.y += tilingOffsetRect.height;
             tilingOffsetRect.y += 2;
 
+            EditorGUI.showMixedValue = false;
             // When changed shader lab property attribute value.(ex: resolution, channel num, bit)
-            var isChangedTextureSettings = IsChangedTextureSettings(data);
+            var isChangedTextureSettings = IsInconsistentTextureSettings(dataArray);
 
             if (EditorGUI.EndChangeCheck() || isChangedTextureSettings)
             {
-                 data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop));
-                 var tex = data.texture;
-                if (!subAssets.Contains(tex))
-                    AssetDatabase.AddObjectToAsset(tex, mat);
-                data.texture = tex;
-                prop.textureValue = tex;
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(tex);
-                EditorUtility.SetDirty(mat);
-                // AssetDatabase.ImportAsset(path);
-                // AssetDatabase.SaveAssets();
-            }
+                var textures = dataArray.Select(e => e.texture).ToArray<Object>();
+                // Register property change undo before bake texture.
+                editor.RegisterPropertyChangeUndo(propName);
+                Undo.RecordObjects(textures, "Bake Curve Texture");
 
-            if (data.texture != null && prop.textureValue != data.texture)
-            {
-                prop.textureValue = data.texture;
-                EditorUtility.SetDirty(mat);
+                foreach (var target in prop.targets)
+                {
+                    if (target is not Material mat) continue;
+                    var data = FetchCurveTextureData(prop.name, mat);
+                    data.BakeTexture(_resolution, _accumulate, _useHalfTexture, PickCorrectTextureFormat(), CurveTexName(prop.name));
+                    EditorUtility.SetDirty(data);
+                    EditorUtility.SetDirty(data.texture);
+                    EditorUtility.SetDirty(mat);    
+                }
             }
+            
             MaterialEditor.EndProperty();
         }
 
@@ -169,12 +244,17 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
             return format;
         }
-
-        private bool IsChangedTextureSettings(CurveTextureData data)
+        
+        private bool IsInconsistentTextureSettings(CurveTextureData[] dataArray)
         {
-            if (data.texture == null) return true;
-            var format = PickCorrectTextureFormat();
-            return data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format;
+            foreach (var data in dataArray)
+            {
+                if (data.texture == null) return true;
+                var format = PickCorrectTextureFormat();
+                if (data.texture.width != _resolution || data.texture.height != 1 || data.texture.format != format)
+                    return true;
+            }
+            return false;
         }
     }
 }

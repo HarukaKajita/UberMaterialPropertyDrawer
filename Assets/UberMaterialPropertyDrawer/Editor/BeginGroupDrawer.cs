@@ -33,7 +33,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var data = GetGroupData(editor);
-            var indentNum = UberGroupState.GetIndentLevel(data);
+            var indentNum = UberGroupState.GetGroupIndentLevel(data);
             if (TryBeginGroup(data, prop))
                 BeginGroupScope(editor);
             var parentGroup = GetParentGroup(editor, GroupName);

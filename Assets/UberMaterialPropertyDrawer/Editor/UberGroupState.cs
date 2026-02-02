@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEditor;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -85,7 +86,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return true;
         }
 
-        internal static int GetIndentLevel(GroupData data)
+        internal static int GetGroupIndentLevel(GroupData data)
         {
             return data == null ? 0 : Math.Max(0,data.GroupNest.Count-1);
         }

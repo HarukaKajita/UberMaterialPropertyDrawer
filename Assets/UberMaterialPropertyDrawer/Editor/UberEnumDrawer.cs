@@ -112,8 +112,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.LabelField(position, _errorLabel);
                 return;
             }
+            
             MaterialEditor.BeginProperty(position, prop);
+            EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = prop.hasMixedValue;
+            
+            // Get current index value
             var value = Util.GetInt(prop);
             var selectedIndex = -1;
             for (var index = 0; index < _values.Length; index++)
@@ -125,10 +129,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     break;
                 }
             }
-
+            // Enum popup GUI
             var selIndex = EditorGUI.Popup(position, label, selectedIndex, _names);
+            
             EditorGUI.showMixedValue = false;
-            Util.SetInt(prop, _values[selIndex]);
+            if (EditorGUI.EndChangeCheck())
+            {
+                editor.RegisterPropertyChangeUndo(prop.name);
+                Util.SetInt(prop, _values[selIndex]);    
+            }
             MaterialEditor.EndProperty();
         }
     }
