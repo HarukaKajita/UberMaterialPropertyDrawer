@@ -68,12 +68,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 if (target is not Material mat)continue;
                 var data = FetchCurveData(prop.name, mat);
-                var dataName = CurveDataName(prop.name);    
                 if (data == null)
                 {
                     initialized = false;
                     data = ScriptableObject.CreateInstance<CurveData>();
-                    data.name = dataName;
+                    data.name = CurveDataName(prop.name);
+                    data.hideFlags |= HideFlags.HideInHierarchy;
                     AssetDatabase.AddObjectToAsset(data, mat);
                     EditorUtility.SetDirty(data);
                     EditorUtility.SetDirty(mat);

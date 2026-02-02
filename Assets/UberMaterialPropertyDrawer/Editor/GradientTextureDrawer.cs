@@ -66,12 +66,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 if (target is not Material mat)continue;
                 var data = FetchGradientData(prop.name, mat);
-                var dataName = GradientDataName(prop.name);    
                 if (data == null)
                 {
                     initialized = false;
                     data = ScriptableObject.CreateInstance<GradientData>();
-                    data.name = dataName;
+                    data.name = GradientDataName(prop.name);
+                    data.hideFlags |= HideFlags.HideInHierarchy;
                     AssetDatabase.AddObjectToAsset(data, mat);
                     EditorUtility.SetDirty(data);
                     EditorUtility.SetDirty(mat);
