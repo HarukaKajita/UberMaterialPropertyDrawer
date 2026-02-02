@@ -5,7 +5,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     internal class GradientData : ScriptableObject
     {
         // don't rename this field. It is used by GradientTextureDrawer.cs as SerializedProperty.
-        public Gradient gradient = new Gradient();
+        [GradientUsage(true)] public Gradient gradient = new();
         
         public void BakeTo(ref Texture2D tex, int resolution, TextureFormat format, string texName)
         {
