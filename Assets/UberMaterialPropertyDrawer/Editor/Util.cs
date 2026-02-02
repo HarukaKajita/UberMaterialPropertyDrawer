@@ -10,6 +10,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             return $"{prop.type} : {prop.name}";
         }
+        public static GUIContent MakeLabelWithTooltip(MaterialProperty prop)
+        {
+            return new GUIContent(prop.displayName, GetPropertyTooltip(prop));
+        }
         public static int GetInt(MaterialProperty prop)
         {
             if (prop.type == MaterialProperty.PropType.Int)
