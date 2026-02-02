@@ -59,6 +59,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return subAssets.OfType<Texture2D>().FirstOrDefault(a => a.name == textureName);
         }
         
+        public static Texture2D[] FetchSubAssetTextureArray(Material[] mat, string textureName)
+        {
+            return mat.Select(e => FetchSubAssetTexture(e, textureName)).ToArray();
+        }
+        
         public static void DelaySaveAsset(Material mat)
         {
             EditorApplication.delayCall += () =>

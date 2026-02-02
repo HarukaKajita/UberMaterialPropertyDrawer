@@ -2,20 +2,17 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    internal class GradientTextureData : ScriptableObject
+    internal class GradientData : ScriptableObject
     {
         // don't rename this field. It is used by GradientTextureDrawer.cs as SerializedProperty.
         public Gradient gradient = new Gradient();
-        [HideInInspector] public Texture2D texture;
         
-        public void BakeTexture(int resolution, TextureFormat format, string texName)
+        public void BakeTo(ref Texture2D tex, int resolution, TextureFormat format, string texName)
         {
-            var tex = texture;
             if (tex == null)
             {
                 tex = new Texture2D(resolution, 1, format, true, true);
                 tex.name = texName;
-                texture = tex;
             }
             else if (tex.width != resolution || tex.height != 1 || tex.format != format)
                 tex.Reinitialize(resolution, 1, format, true);

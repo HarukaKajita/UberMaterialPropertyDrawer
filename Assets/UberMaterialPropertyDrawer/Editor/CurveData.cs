@@ -2,23 +2,20 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    internal class CurveTextureData : ScriptableObject
+    internal class CurveData : ScriptableObject
     {
         // don't rename this field. It is used by CurveTextureDrawer.cs as SerializedProperty
         public AnimationCurve curveR = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveG = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveB = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveA = AnimationCurve.Linear(0, 0, 1, 1);
-        [HideInInspector] public Texture2D texture;
 
-        public void BakeTexture(int resolution, bool accumulate, bool useHalfTexture, TextureFormat format, string texName)
+        public void BakeTo(ref Texture2D tex, int resolution, bool accumulate, bool useHalfTexture, TextureFormat format, string texName)
         {
-            var tex = texture;
             if (tex == null)
             {
                 tex = new Texture2D(resolution, 1, format, true, true);
                 tex.name = texName;
-                texture = tex;
             }
             else if (tex.width != resolution || tex.height != 1 || tex.format != format)
                 tex.Reinitialize(resolution, 1, format, true);
