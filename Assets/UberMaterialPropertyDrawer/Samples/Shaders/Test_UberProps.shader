@@ -3,19 +3,25 @@ Shader "Test/UberProps"
     Properties
     {
     	[InitGroupDecorator]
-    	[BeginGroup(Misc)] _BeginMiscDummy ("_BeginMiscDummy", int) = 0
-    	[Vector2(Misc)] _Vec2Test("Vec2Test", Vector) = (0,0,0,0)
-    	[EndGroup(Misc)] _EndMiscDummy ("_EndMiscDummy", int) = 0
-        
-    	_AAA ("_AAA", 2D) = "white" {}
+    	[BeginGroup     (Sample)]					 _BeginGroup  ("BeginAllDummy", int) = 0
+    	[Vector         (Sample,2)] 				 _Vec2Test	  ("Vec2Test", Vector) = (0,0,0,0)
+    	[Vector         (Sample,3)] 				 _Vec3Test	  ("Vec3Test", Vector) = (0,0,0,0)
+    	[Vector         (Sample,4)] 				 _Vec4Test	  ("Vec4Test", Vector) = (0,0,0,0)
+    	[UberEnum       (Sample, A,0,B,1,C,2)]		 _EnumTest	  ("EnumTest",    int) = 0
+    	[UberEnum       (Sample, CullMode)]		 _DefinedEnum ("DefinedEnum", int) = 0
+    	[CurveTexture   (Sample, res256, ch4, bit8)]_Curve		  ("Curve",    2D) = "black" {}
+    	[GradientTexture(Sample, res256, ch4, bit8)]_Gradient	  ("Gradient", 2D) = "black" {}
+    	
     	[BeginToggleGroup(A)]	_UseA ("_UseA", int) = 1
         [BeginToggleGroup(B)]   _UseB ("_UseB", int) = 1
-        [BeginToggleGroup(C)]   _UseC ("_UseC", int) = 1
-        [BeginToggleGroup(D)]   _UseD ("_UseD", int) = 1
-        [EndGroup(D)]			_EndD ("_EndD", int) = 0
-        [EndGroup(C)]			_EndC ("_EndC", int) = 0
+	    [BeginToggleGroup(C)]   _UseC ("_UseC", int) = 1
+	    [EndGroup(C)]			_EndC ("_EndC", int) = 0
         [EndGroup(B)]			_EndB ("_EndB", int) = 0
         [EndGroup(A)]			_EndA ("_EndA", int) = 0
+    	
+    	[EndGroup(Sample)]_EndGroup("EndAllDummy", int) = 0
+	    
+    	
         [BeginToggleGroup(TestGroup)]	_UseSomeFeature		("_UseSomeFeature", int) = 1
         [Uber(TestGroup)]				_UberTest			("_UberTest", int) = 0
         [Uber(TestGroup)]				_SomeFeatureMap		("_SomeFeatureMap", 2D) = "white" {}
@@ -26,12 +32,9 @@ Shader "Test/UberProps"
         [BeginGroup(NestGroup)]			_UseNestFeature				("_UseNestFeature", int) = 1
         [Uber(NestGroup)]               _NestFeatureColor 			("_NestFeatureColor", color) = (0.2,0.7,0.8)
         [BeginGroup(GrandChild)]		_BeginGroundChild 			("_BeginGroundChild", int) = 1
-        [Vector2(GrandChild)]			_GrandChildVector 			("_GrandChildVector", vector) = (0,0,0,0)
+        [Vector(GrandChild,3)]			_GrandChildVector 			("_GrandChildVector", vector) = (0,0,0,0)
     	[UberToggle(GrandChild)]		_UseGrandChildSomeFeature	("_UseGrandChildSomeFeature", int) = 1
-    	[CurveTexture(GrandChild, res256, ch4, bit8)]
-										_GrandChildCurve			("_GrandChildCurve", 2D) = "black" {}
-    	[GradientTexture(GrandChild, res256, ch4, bit8)]
-    									_GrandChildGradient 		("_GrandChildGradient", 2D) = "black" {}
+    	
         [EndGroup(GrandChild)]			_EndGroundChild 			("_EndGroundChild", int) = 0
         [EndGroup(NestGroup)]			_EndNestGroup				("_EndNestGroup", int) = 0
         [EndGroup(TestGroup)]			_EndSomGroup				("_EndSomGroup", int) = 0
@@ -90,7 +93,7 @@ Shader "Test/UberProps"
 		[Uber(EnvironmentReflection)]				_ReflectFaceColor				("Reflection Color", Color) = (0,0,0,1)
 		[Uber(EnvironmentReflection)]				_ReflectOutlineColor			("Reflection Color", Color) = (0,0,0,1)
 		[Uber(EnvironmentReflection)][NoScaleOffset]_Cube							("Reflection Cubemap", Cube) = "black" { /* TexGen CubeReflect */ }
-		[Vector3(EnvironmentReflection)]			_EnvMatrixRotation				("Texture Rotation", vector) = (0, 0, 0, 0)
+		[Vector(EnvironmentReflection,3)]			_EnvMatrixRotation				("Texture Rotation", vector) = (0, 0, 0, 0)
     	[EndGroup(EnvironmentReflection)]			_EndEnvironmentReflectionDummy	("_", int) = 0
 		
     	[EndGroup(Lighting)] _EndLightingDummy ("_", int) = 0
