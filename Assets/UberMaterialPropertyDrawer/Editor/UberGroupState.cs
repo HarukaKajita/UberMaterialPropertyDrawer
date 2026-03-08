@@ -15,12 +15,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         internal static bool TryRecordPush(GroupData data, string key)
         {
+            UberDrawerLogger.Log("TryRecordPush : " + key);
             if (data == null || string.IsNullOrEmpty(key)) return false;
             return data.PushedInPass.Add(key);
         }
 
         internal static bool TryRecordPop(GroupData data, string key)
         {
+            UberDrawerLogger.Log("TryRecordPop : " + key);
             if (data == null || string.IsNullOrEmpty(key)) return false;
             return data.PoppedInPass.Add(key);
         }
