@@ -1,10 +1,9 @@
 using System;
 using System.Linq;
-using UnityEditor;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    internal static class UberGroupState
+    public static class UberGroupState
     {
         internal static void BeginPass(GroupData data)
         {
@@ -32,7 +31,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// </summary>
         /// <param name="groupName"></param>
         /// <returns></returns>
-        internal static bool GetGroupExpanded(GroupData data, string groupName)
+        public static bool GetGroupExpanded(GroupData data, string groupName)
         {
             if (string.IsNullOrEmpty(groupName)) return true;
             if (data == null) return true;

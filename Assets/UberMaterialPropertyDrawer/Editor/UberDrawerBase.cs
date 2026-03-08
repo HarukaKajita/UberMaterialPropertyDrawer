@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -74,10 +73,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected GroupData GetGroupData(MaterialEditor editor)
         {
-            return GroupDataCache.GetOrCreate(GetTargetMaterial(editor));
+            var mat = GetTargetMaterial(editor);
+            return GroupDataCache.GetOrCreate(mat);
         }
-
-        internal static Material GetTargetMaterial(MaterialEditor editor)
+        
+        public static Material GetTargetMaterial(MaterialEditor editor)
         {
             if (editor == null) return null;
             if (editor.target is Material mat) return mat;
