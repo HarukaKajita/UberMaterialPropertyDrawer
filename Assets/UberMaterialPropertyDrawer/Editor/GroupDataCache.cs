@@ -4,6 +4,15 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    /// <summary>
+    /// Provides a caching mechanism for storing and managing <see cref="GroupData"/> objects
+    /// associated with <see cref="Material"/> instances.
+    /// </summary>
+    /// <remarks>
+    /// This class is utilized to optimize operations related to material property drawing and
+    /// shader dependency management. It ensures that the relevant group data for materials
+    /// are readily available within the editor, avoiding repetitive computations.
+    /// </remarks>
     public static class GroupDataCache
     {
         static readonly Dictionary<Material, GroupData> s_cache = new();

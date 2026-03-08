@@ -13,7 +13,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool ParentIsClosed(GroupData data, string parentGroup)
         {
-            if (string.IsNullOrEmpty(parentGroup)) return false;
             return !UberGroupState.GetGroupExpanded(data, parentGroup);
         }
 
