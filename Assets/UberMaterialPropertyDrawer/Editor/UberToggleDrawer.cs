@@ -31,7 +31,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (!IsVisibleInGroup(editor)) return;
 
-            var propName = label.text;
+            var propName = prop.name;
+            var labelText = label.text;
             if (_dimention == 1)
             {
                 MaterialEditor.BeginProperty(position, prop);
@@ -40,7 +41,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
                 
                 var toggleValue = Util.GetAsBool(prop);
-                toggleValue = EditorGUI.Toggle(position, propName, toggleValue);    
+                toggleValue = EditorGUI.Toggle(position, labelText, toggleValue);    
             
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
