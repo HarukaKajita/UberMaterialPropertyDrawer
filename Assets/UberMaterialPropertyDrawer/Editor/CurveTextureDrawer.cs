@@ -106,7 +106,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!IsVisibleInGroup(editor)) return;
+            if (!IsVisibleDrawer(editor)) return;
             if (prop.type != MaterialProperty.PropType.Texture)
             {
                 EditorGUI.LabelField(position, "CurveTexture used on non-texture property");

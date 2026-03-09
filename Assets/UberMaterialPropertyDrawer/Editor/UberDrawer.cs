@@ -14,7 +14,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!IsVisibleInGroup(editor)) return;
+            if (!IsVisibleDrawer(editor)) return;
 
             MaterialEditor.BeginProperty(position, prop);
             var tmp = EditorGUIUtility.labelWidth;
@@ -32,7 +32,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
-            if (!IsVisibleInGroup(editor)) return GUIHelper.ClosedHeight;
+            if (!IsVisibleDrawer(editor)) return GUIHelper.ClosedHeight;
             return MaterialEditor.GetDefaultPropertyHeight(prop);
         }
     }

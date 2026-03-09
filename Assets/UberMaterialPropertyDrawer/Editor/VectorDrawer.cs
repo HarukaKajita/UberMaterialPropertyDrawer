@@ -24,7 +24,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            if (!IsVisibleInGroup(editor)) return;
+            if (!IsVisibleDrawer(editor)) return;
             MaterialEditor.BeginProperty(position,prop);
             EditorGUI.BeginChangeCheck();
             EditorGUI.showMixedValue = prop.hasMixedValue;

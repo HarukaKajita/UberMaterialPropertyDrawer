@@ -38,7 +38,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return targets?.FirstOrDefault(target => target is Material) as Material;
         }
         
-        protected bool IsVisibleInGroup(MaterialEditor editor)
+        protected bool IsVisibleDrawer(MaterialEditor editor)
         {
             var data = GetGroupData(editor);
             return GroupVisibility.CanShowContent(data, editor, GroupName);
@@ -46,7 +46,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected float GetVisibleHeight(float visibleHeight, MaterialEditor editor)
         {
-            return IsVisibleInGroup(editor) ? visibleHeight : GUIHelper.ClosedHeight;
+            return IsVisibleDrawer(editor) ? visibleHeight : GUIHelper.ClosedHeight;
         }
 
         protected void BeginGroupScope(MaterialEditor editor)
