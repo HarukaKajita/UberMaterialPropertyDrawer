@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEditor;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -13,13 +14,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// 指定されたグループデータに対して新しいパスを開始する。
         /// 現在のパスの状態を初期化し、以前にプッシュおよびポップされたレコードセットをクリアします。
         /// </summary>
-        /// <param name="data">現在のパス状態とグループ固有情報を保持するグループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
-        internal static void BeginPass(GroupData data)
+        internal static void BeginPass(MaterialEditor editor)
         {
-            if (data == null) return;
-            data.CurrentPassId++;
-            data.PushedInPass.Clear();
-            data.PoppedInPass.Clear();
+            if (editor == null) return;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            renderState.PushedProperties.Clear();
+            renderState.PoppedProperties.Clear();
         }
 
         /// <summary>
@@ -27,14 +27,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// まだrecordされていなければrecordしてtrueを返す。
         /// 既にrecordされていればfalseを返す。
         /// </summary>
-        /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
+        /// <param name="editor"></param>
         /// <param name="propNameKey">プロパティ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <returns>記録に成功したかどうか</returns>
-        internal static bool TryRecordPush(GroupData data, string propNameKey)
+        internal static bool TryRecordPush(MaterialEditor editor, string propNameKey)
         {
             UberDrawerLogger.Log("TryRecordPush : " + propNameKey);
-            if (data == null || string.IsNullOrEmpty(propNameKey)) return false;
-            return data.PushedInPass.Add(propNameKey);
+            if (editor == null || string.IsNullOrEmpty(propNameKey)) return false;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            return renderState.PushedProperties.Add(propNameKey);
         }
 
         /// <summary>
@@ -42,136 +43,190 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// まだrecordされていなければrecordしてtrueを返す。
         /// 既にrecordされていればfalseを返す。
         /// </summary>
-        /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
+        /// <param name="editor"></param>
         /// <param name="propNameKey">プロパティ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <returns>記録に成功したかどうか</returns>
-        internal static bool TryRecordPop(GroupData data, string propNameKey)
+        internal static bool TryRecordPop(MaterialEditor editor, string propNameKey)
         {
             UberDrawerLogger.Log("TryRecordPop : " + propNameKey);
-            if (data == null || string.IsNullOrEmpty(propNameKey)) return false;
-            return data.PoppedInPass.Add(propNameKey);
+            if (editor == null || string.IsNullOrEmpty(propNameKey)) return false;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            return renderState.PoppedProperties.Add(propNameKey);
         }
 
         /// <summary>
         /// 開閉状態の読み出し
         /// </summary>
         /// <param name="data">グループデータオブジェクト。nullなら、開状態として返却</param>
-        /// <param name="groupName">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
+        /// <param name="groupPath">グループパス。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <returns>開閉状態</returns>
-        public static bool GetGroupExpanded(GroupData data, string groupName)
+        public static bool GetExpanded(GroupData data, string groupPath)
         {
-            if (string.IsNullOrEmpty(groupName)) return true;
+            if (string.IsNullOrEmpty(groupPath)) return true;
             if (data == null) return true;
-            if (data.GroupExpanded.TryGetValue(groupName, out var expanded))
+            if (data.ExpansionState.ExpandedByPath.TryGetValue(groupPath, out var expanded))
             {
-                UberDrawerLogger.Log("GetGroupExpanded : Existed " + groupName + " : " + (expanded ? "開いている" : "閉じている"));
+                UberDrawerLogger.Log("GetExpanded : Existed " + groupPath + " : " + (expanded ? "開いている" : "閉じている"));
                 return expanded;
             }
 
-            var defaultValue = false;
-            data.GroupExpanded.Add(groupName, defaultValue);
-            UberDrawerLogger.Log("GetGroupExpanded : NOT Existed " + groupName + " : " + (defaultValue　?　"開いている"　:　"閉じている"));
+            const bool defaultValue = false;
+            data.ExpansionState.ExpandedByPath.Add(groupPath, defaultValue);
+            UberDrawerLogger.Log("GetExpanded : NOT Existed " + groupPath + " : " + (defaultValue　?　"開いている"　:　"閉じている"));
             return defaultValue;
         }
 
         /// <summary>
-        /// 開閉状態の書き出し
+        /// 開閉状態の書き出し。親グループに依存しない開閉状態。
         /// </summary>
         /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
-        /// <param name="groupName">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
+        /// <param name="groupPath">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <param name="state">開閉状態</param>
-        internal static void SetGroupExpanded(GroupData data, string groupName, bool state)
+        internal static void SetExpanded(GroupData data, string groupPath, bool state)
         {
-            if (string.IsNullOrEmpty(groupName) || data == null) return;
-            data.GroupExpanded[groupName] = state;
+            if (string.IsNullOrEmpty(groupPath) || data == null) return;
+            data.ExpansionState.ExpandedByPath[groupPath] = state;
         }
 
         /// <summary>
         /// 描画中のプロパティのグループスタックの更新。
         /// グループ開始。
         /// </summary>
-        /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
-        /// <param name="groupName">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
-        internal static void PushGroup(GroupData data, string groupName)
+        /// <param name="editor"></param>
+        /// <param name="groupPath">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
+        internal static void PushPath(MaterialEditor editor, string groupPath)
         {
-            if (string.IsNullOrEmpty(groupName) || data == null) return;
-            UberDrawerLogger.Log("Push : " + groupName);
-            data.GroupNest.Push(groupName);
+            if (string.IsNullOrEmpty(groupPath) || editor== null) return;
+            UberDrawerLogger.Log("Push : " + groupPath);
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            renderState.PathStack.Push(groupPath);
         }
 
         /// <summary>
         /// 描画中のプロパティのグループスタックの更新。
         /// グループの終了。
         /// </summary>
-        /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
+        /// <param name="editor"></param>
         /// <returns>グループ名。空文字列の場合、スタックが空であることを示す。</returns>
-        internal static string PopGroup(GroupData data)
+        internal static string PopPath(MaterialEditor editor)
         {
-            if (data == null || data.GroupNest.Count == 0)
+            if (editor == null) return string.Empty;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            if (editor == null || renderState.PathStack.Count == 0)
             {
                 UberDrawerLogger.LogWarning("Pop called on empty group stack.");
                 return string.Empty;
             }
 
-            var popGroup = data.GroupNest.Pop();
-            UberDrawerLogger.Log("Pop  : " + popGroup);
-            return popGroup;
+            var poppedPath = renderState.PathStack.Pop();
+            UberDrawerLogger.Log("Pop  : " + poppedPath);
+            return poppedPath;
         }
 
-        internal static bool TryPeekGroup(GroupData data, out string groupName)
+        internal static bool TryPeekGroup(MaterialEditor editor, out string groupPath)
         {
-            if (data == null || data.GroupNest.Count == 0)
+            if (editor == null)
             {
-                groupName = string.Empty;
+                groupPath = null;
                 return false;
             }
 
-            groupName = data.GroupNest.Peek();
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            if (renderState.PathStack.Count == 0)
+            {
+                groupPath = string.Empty;
+                return false;
+            }
+
+            groupPath = renderState.PathStack.Peek();
             return true;
         }
 
-        internal static int GetGroupIndentLevel(GroupData data)
+        internal static void ResetAll(GroupData data, MaterialEditor editor)
         {
-            return data == null ? 0 : Math.Max(0,data.GroupNest.Count-1);
+            if (data != null) 
+            {
+                data.ExpansionState.ExpandedByPath.Clear();
+            }
+
+            if (editor != null)
+            {
+                var renderState = GroupRenderStateCache.GetOrCreate(editor);
+                renderState.PathStack.Clear();
+                renderState.PushedProperties.Clear();
+                renderState.PoppedProperties.Clear();
+            }
+        }
+        
+        internal static void ResetNest(MaterialEditor editor)
+        {
+            if (editor == null) return;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            renderState.PathStack.Clear();
+        }
+        
+        public static string BuildPath(string parentPath, string groupName)
+        {
+            // A/B/Cの形にする
+            // parentPathがnullや空文字列ならgroupNameをそのまま返差ないと/A/B/Cの形になり得る。
+            if(string.IsNullOrEmpty(parentPath)) return groupName;
+            return parentPath + "/" + groupName;
         }
 
-        internal static void ResetAll(GroupData data)
+        public static string GetParentPath(MaterialEditor editor)
         {
-            if (data == null) return;
-            data.GroupExpanded.Clear();
-            data.GroupNest.Clear();
-            data.PushedInPass.Clear();
-            data.PoppedInPass.Clear();
-            data.CurrentPassId = 0;
+            if (editor == null) return string.Empty;
+            
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            if (renderState.PathStack.Count <= 1) return string.Empty;
+            return renderState.PathStack.ToArray()[1];
         }
-        
-        internal static void ResetNest(GroupData data)
+        public static string GetCurrentPath(MaterialEditor editor)
         {
-            if (data == null) return;
-            data.GroupNest.Clear();
+            if (editor == null) return string.Empty;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            if (renderState.PathStack.Count <= 0) return string.Empty;
+            return renderState.PathStack.Peek();
         }
-        
+
         /// <summary>
-        /// 親グループのどれかが閉じられているかどうかを確認する。
+        /// 今いるscope自体が全部開いているか
         /// </summary>
-        /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
-        /// <param name="indentNum">確認する親グループの深さ。0は現在のグループを指す。</param>
-        /// <returns>親グループのどれかが閉じられている場合はtrue、それ以外はfalse。</returns>
-        internal static bool ParentGroupIsClosed(GroupData data, int indentNum)
+        /// <param name="data"></param>
+        /// <param name="editor"></param>
+        /// <returns></returns>
+        public static bool IsCurrentScopeVisible(GroupData data, MaterialEditor editor)
         {
             if (data == null) return false;
-            UberDrawerLogger.Log("indentNum : " + indentNum);
-            UberDrawerLogger.Log("GroupNest : " + data.GroupNest.Count);
-            var groupArray = data.GroupNest.Reverse().ToArray();
-            if (data.GroupNest.Count < indentNum) return false;
-            UberDrawerLogger.Log("Parents : " + string.Join(", ", groupArray));
-            for (var i = 0; i < indentNum; i++)
+            if (editor == null) return false;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            // あってる？
+            foreach (var groupPath in renderState.PathStack)
             {
-                var parentalGroup = groupArray[i];
-                UberDrawerLogger.Log("Parent " + parentalGroup + " -> " + (GetGroupExpanded(data, parentalGroup) ? "opened" : "closed"));
-                if (!GetGroupExpanded(data, parentalGroup)) return true;
+                if (!GetExpanded(data, groupPath))
+                    return false;
             }
-            return false;
+            return true;
+        }
+
+        /// <summary>
+        /// 今からbeginするグループの親chainが全部開いているか
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="editor"></param>
+        /// <returns></returns>
+        public static bool IsParentScopeVisible(GroupData data, MaterialEditor editor)
+        {
+            // あってる？
+            if (data == null) return false;
+            if (editor == null) return false;
+            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var groupPathArray = renderState.PathStack.Reverse().ToArray();
+            for (var i = 0; i < groupPathArray.Length-1; i++)
+            {
+                if (!GetExpanded(data, groupPathArray[i])) return false;
+            }
+            return true;
         }
     }
 }

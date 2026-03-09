@@ -10,57 +10,66 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public BeginGroupDrawer(string groupName) : base(groupName)
         {
         }
-
-        private static bool ParentIsClosed(GroupData data, string parentGroup)
-        {
-            return !UberGroupState.GetGroupExpanded(data, parentGroup);
-        }
-
+        
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
             var data = GetGroupData(editor);
-            if (TryBeginGroup(data, prop))
-                BeginGroupScope(editor);
-            var parentGroup = GetParentGroup(editor, GroupName);
-            var parentIsClosed = ParentIsClosed(data, parentGroup);
-            UberDrawerLogger.Log(GroupName + "のParent" + parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
-            return parentIsClosed ? GUIHelper.ClosedHeight : GUIHelper.GroupHeaderHeight;
+            var beginGroup = TryBeginGroup(editor, prop);
+            if (beginGroup) BeginGroupScope(editor);
+            var parentPath         = UberGroupState.GetParentPath(editor);
+            var parentVisible = UberGroupState.IsParentScopeVisible(data, editor);
+            var groupPath = UberGroupState.GetCurrentPath(editor);
+            
+            UberDrawerLogger.Log($"{GetType().Name}({GroupName}).GetPropertyHeight()");
+            UberDrawerLogger.Log($"\t{nameof(beginGroup)}:{beginGroup}");
+            UberDrawerLogger.Log($"\t{nameof(parentPath)}:{parentPath}");
+            UberDrawerLogger.Log($"\t{nameof(groupPath)}:{groupPath}");
+            UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
+            UberDrawerLogger.Log(GroupName + "のParent" + parentPath + "は" + (parentVisible ? "可視":"不可視"));
+            return parentVisible ? GUIHelper.GroupHeaderHeight : GUIHelper.ClosedHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log("OnGUI Begin : " + GroupName);
             var data = GetGroupData(editor);
-            var indentNum = UberGroupState.GetGroupIndentLevel(data);
-            if (TryBeginGroup(data, prop))
-                BeginGroupScope(editor);
-            var parentGroup = GetParentGroup(editor, GroupName);
-            var parentIsClosed = ParentIsClosed(data, parentGroup);
-            _memo = $" parent:{parentGroup}";
-            UberDrawerLogger.Log(GroupName + "のParent" + parentGroup + "は" + (parentIsClosed ? "閉じてる" : "開いている"));
-            var newState = false;
-            if (!parentIsClosed) newState = BeginPanel(position, prop, UberGroupState.GetGroupExpanded(data, GroupName), indentNum);
-            EditorGUI.indentLevel++;
-            UberGroupState.SetGroupExpanded(data, GroupName, newState);
+            var beginGroup = TryBeginGroup(editor, prop);
+            if (beginGroup) BeginGroupScope(editor);
+            
+            var parentPath         = UberGroupState.GetParentPath(editor);
+            var parentVisible = UberGroupState.IsParentScopeVisible(data, editor);
+            var groupPath = UberGroupState.GetCurrentPath(editor);
+            
+            UberDrawerLogger.Log($"{GetType().Name}({GroupName}).OnGUI()");
+            UberDrawerLogger.Log($"\t{nameof(beginGroup)}:{beginGroup}");
+            UberDrawerLogger.Log($"\t{nameof(parentPath)}:{parentPath}");
+            UberDrawerLogger.Log($"\t{nameof(groupPath)}:{groupPath}");
+            UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
+            UberDrawerLogger.Log(GroupName + "のParent" + parentPath + "は" + (parentVisible ? "可視" : "不可視"));
+            _memo = $" parent:{parentPath}";
+            var state = UberGroupState.GetExpanded(data, groupPath);
+            if (parentVisible)
+            {
+                var newState = BeginPanel(position, data, state);
+                if (state != newState)
+                    UberGroupState.SetExpanded(data, groupPath, newState);
+                EditorGUI.indentLevel++;
+            }
         }
 
-        private bool BeginPanel(Rect position, MaterialProperty prop, bool expanded, int indentNum)
+        private bool BeginPanel(Rect position, GroupData data, bool expanded)
         {
             UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
             style.border = new RectOffset(7, 7, 4, 4); // Background edge tweaks.
             style.fixedHeight = GUIHelper.GroupHeaderHeight; // Background height.
             position.y += GUIHelper.GroupHeaderTopPadding;
-            var indentOffset = GUIHelper.IndentWidth * indentNum;
-            var bgRect = new Rect(position.x + indentOffset, position.y, position.width - indentOffset,
-                style.fixedHeight);
+            var bgRect = EditorGUI.IndentedRect(position);
             GUI.Box(bgRect, "", style); // Background.
             var interactiveRect = new Rect(bgRect.x, bgRect.y, bgRect.width, bgRect.height);
             var e = Event.current;
             if (e.type == EventType.Repaint)
             {
-                EditorStyles.foldout.Draw(new Rect(position.x + 2 + indentOffset, position.y, 18, 18), false, false,
+                EditorStyles.foldout.Draw(new Rect(position.x + 2 + GUIHelper.GetIndentWidth(), position.y, 18, 18), false, false,
                     expanded, false);
             }
 
@@ -78,9 +87,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return expanded;
         }
 
-        private static bool TryBeginGroup(GroupData data, MaterialProperty prop)
+        private static bool TryBeginGroup(MaterialEditor editor, MaterialProperty prop)
         {
-            return UberGroupState.TryRecordPush(data, prop?.name);
+            return UberGroupState.TryRecordPush(editor, prop?.name);
         }
     }
 }

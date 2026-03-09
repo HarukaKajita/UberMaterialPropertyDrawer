@@ -11,29 +11,43 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
-            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
+            var endGroup = TryEndGroup(editor, prop);
+            if (endGroup) EndGroupScope(editor, UberGroupState.GetCurrentPath(editor));
+         
             var data = GetGroupData(editor);
-            if (TryEndGroup(data, prop))
-                EndGroupScope(editor, GroupName);
+            var parentPath = UberGroupState.GetCurrentPath(editor);
+            var parentVisible = UberGroupState.IsCurrentScopeVisible(data, editor);
+            
+            UberDrawerLogger.Log($"{GetType().Name}({GroupName}).GetPropertyHeight()");
+            UberDrawerLogger.Log($"\t{nameof(endGroup)}:{endGroup}");
+            UberDrawerLogger.Log($"\t{nameof(parentPath)}:{parentPath}");
+            UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
+            
             return GUIHelper.ClosedHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
+            var endGroup = TryEndGroup(editor, prop);
+            if (endGroup) EndGroupScope(editor, UberGroupState.GetCurrentPath(editor));
+            
             var data = GetGroupData(editor);
-            if (TryEndGroup(data, prop))
-                EndGroupScope(editor, GroupName);
-            EndPanel();
+            var parentPath = UberGroupState.GetCurrentPath(editor);
+            var parentVisible = UberGroupState.IsCurrentScopeVisible(data, editor);
+            
+            UberDrawerLogger.Log($"{GetType().Name}({GroupName}).OnGUI()");
+            UberDrawerLogger.Log($"\t{nameof(endGroup)}:{endGroup}");
+            UberDrawerLogger.Log($"\t{nameof(parentPath)}:{parentPath}");
+            UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
+            
+            // End Panel
+            if(parentVisible)
+                EditorGUI.indentLevel--;
         }
 
-        private void EndPanel()
+        private static bool TryEndGroup(MaterialEditor editor, MaterialProperty prop)
         {
-            EditorGUI.indentLevel -= 1;
-        }
-
-        private static bool TryEndGroup(GroupData data, MaterialProperty prop)
-        {
-            return UberGroupState.TryRecordPop(data, prop?.name);
+            return UberGroupState.TryRecordPop(editor, prop?.name);
         }
     }
 }

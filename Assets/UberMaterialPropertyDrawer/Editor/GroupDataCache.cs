@@ -5,98 +5,92 @@ using UnityEngine;
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
     /// <summary>
-    /// Provides a caching mechanism for storing and managing <see cref="GroupData"/> objects
-    /// associated with <see cref="Material"/> instances.
+    /// shader毎にグループの開閉状態をキャッシュするクラス。
     /// </summary>
-    /// <remarks>
-    /// This class is utilized to optimize operations related to material property drawing and
-    /// shader dependency management. It ensures that the relevant group data for materials
-    /// are readily available within the editor, avoiding repetitive computations.
-    /// </remarks>
     public static class GroupDataCache
     {
-        static readonly Dictionary<Material, GroupData> s_cache = new();
+        private static readonly Dictionary<Shader, GroupData> Cache = new();
 
         /// <summary>
         /// Inspector描画タイミングでキャッシュが無ければ呼ぶ想定
         /// </summary>
-        public static void Set(Material mat, GroupData groupData)
+        private static void Set(Shader shader, GroupData groupData)
         {
-            if (!mat || groupData == null) return;
+            if (!shader || groupData == null) return;
 
-            var path = AssetDatabase.GetAssetPath(mat);
-            groupData.material = mat;
+            var path = AssetDatabase.GetAssetPath(shader);
+            groupData.Shader = shader;
 
             if (!string.IsNullOrEmpty(path))
-                groupData.depHashAtSet = AssetDatabase.GetAssetDependencyHash(path); // 依存込みハッシュ
+                groupData.DepHashAtSet = AssetDatabase.GetAssetDependencyHash(path); // 依存込みハッシュ
             else
-                groupData.depHashAtSet = default; // 非アセット(シーン内生成等)
+                groupData.DepHashAtSet = default; // 非アセット(シーン内生成等)
 
-            s_cache[mat] = groupData;
+            Cache[shader] = groupData;
         }
 
-        public static GroupData GetOrCreate(Material mat)
+        public static GroupData GetOrCreate(Shader shader)
         {
-            if (!mat) return null;
-            if (s_cache.TryGetValue(mat, out var groupData)) return groupData;
+            if (!shader) return null;
+            if (Cache.TryGetValue(shader, out var groupData)) return groupData;
 
             groupData = new GroupData();
-            Set(mat, groupData);
+            Set(shader, groupData);
             return groupData;
         }
 
-        public static bool TryGet(Material mat, out GroupData groupData)
+        public static bool TryGet(Shader shader, out GroupData groupData)
         {
-            if (!mat)
+            if (!shader)
             {
                 groupData = null;
                 return false;
             }
-            return s_cache.TryGetValue(mat, out groupData);
+            return Cache.TryGetValue(shader, out groupData);
         }
 
-        public static void Clear(Material mat)
+        public static void Clear(Shader shader)
         {
-            if (!mat) return;
-            s_cache.Remove(mat);
+            if (!shader) return;
+            Cache.Remove(shader);
         }
 
-        public static void ClearAll() => s_cache.Clear();
+        public static void ClearAll() => Cache.Clear();
 
         /// <summary>
         /// シェーダー系ファイルが更新されたタイミングで呼ぶ。
-        /// 依存ハッシュ差分が出たマテリアルをキャッシュから破棄する。
+        /// 依存ハッシュ差分が出たシェーダーをキャッシュから破棄する。
         /// </summary>
         public static void InvalidateByDependencyHash(bool invalidateNonAssetMaterials = true)
         {
-            if (s_cache.Count == 0) return;
+            if (Cache.Count == 0) return;
 
             // Dictionaryを回しながらRemoveしない（スナップショット取る）
-            var keys = new List<Material>(s_cache.Keys);
+            var keys = new List<Shader>(Cache.Keys);
 
-            foreach (var mat in keys)
+            foreach (var shader in keys)
             {
                 // 偽装null/破棄済み掃除
-                if (!mat)
+                if (!shader)
                 {
-                    s_cache.Remove(mat);
+                    Cache.Remove(shader);
                     continue;
                 }
 
-                var data = s_cache[mat];
+                var data = Cache[shader];
 
                 // 非アセット（AssetDatabase管理外）
-                var materialAssetPath = AssetDatabase.GetAssetPath(data.material);
+                var materialAssetPath = AssetDatabase.GetAssetPath(data.Shader);
                 if (string.IsNullOrEmpty(materialAssetPath))
                 {
                     if (invalidateNonAssetMaterials)
-                        s_cache.Remove(mat);
+                        Cache.Remove(shader);
                     continue;
                 }
 
                 var newHash = AssetDatabase.GetAssetDependencyHash(materialAssetPath);
-                if (newHash != data.depHashAtSet)
-                    s_cache.Remove(mat);
+                if (newHash != data.DepHashAtSet)
+                    Cache.Remove(shader);
             }
         }
     }

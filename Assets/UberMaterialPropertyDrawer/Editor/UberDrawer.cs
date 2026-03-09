@@ -33,9 +33,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
             if (!IsVisibleInGroup(editor)) return GUIHelper.ClosedHeight;
-            // var data = GroupDataCache.GetOrCreate(GetTargetMaterial(editor));
-            // if (!UberGroupState.GetGroupExpanded(data, GroupName))
-            //     return GUIHelper.ClosedHeight;
             return MaterialEditor.GetDefaultPropertyHeight(prop);
         }
     }

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,9 +13,31 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         protected UberDrawerBase(string groupName)
         {
             GroupName = groupName ?? string.Empty;
+            if (GroupName.Contains("/"))
+            {
+                UberDrawerLogger.LogError($"Group name cannot contain '/'. Use ':' instead. Group name: {groupName}");
+                GroupName = GroupName.Replace("/", ":");
+            }
         }
 
         protected string GroupName { get; }
+
+        protected GroupData GetGroupData(MaterialEditor editor)
+        {
+            var mat = GetTargetMaterial(editor);
+            if (mat == null) return null;
+            return GroupDataCache.GetOrCreate(mat.shader);
+        }
+        
+        public static Material GetTargetMaterial(MaterialEditor editor)
+        {
+            if (editor == null) return null;
+            if (editor.target is Material mat) return mat;
+
+            var targets = editor.targets;
+            return targets?.FirstOrDefault(target => target is Material) as Material;
+        }
+        
         
         /// <summary>
         /// Returns whether the current group is visible.
@@ -25,12 +48,21 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             var data = GetGroupData(editor);
             if (data == null) return true;
-            var indentLevel = UberGroupState.GetGroupIndentLevel(data);
-            if (string.IsNullOrEmpty(GroupName))
-                return !UberGroupState.ParentGroupIsClosed(data, indentLevel);
-
-            return UberGroupState.GetGroupExpanded(data, GroupName)
-                   && !UberGroupState.ParentGroupIsClosed(data, indentLevel);
+            
+            var currentPath = UberGroupState.GetCurrentPath(editor);
+            
+            var isOutOfGroup = GroupName == "" && currentPath == "";
+            var isInGroupButEmptyGroupName = GroupName == "" && currentPath != "";
+            if (isOutOfGroup) return true;
+            if (isInGroupButEmptyGroupName) return UberGroupState.IsCurrentScopeVisible(data, editor); 
+            
+            var currentGroupMatched = currentPath == GroupName || currentPath.EndsWith("/"+GroupName);
+            if (!currentGroupMatched)
+            {
+                UberDrawerLogger.LogError($"Group [{GroupName}] is written in path [{currentPath}]. fix shader property attribute.");
+                return false;
+            }
+            return UberGroupState.IsCurrentScopeVisible(data, editor);
         }
 
         protected float GetVisibleHeight(float visibleHeight, MaterialEditor editor)
@@ -40,55 +72,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected void BeginGroupScope(MaterialEditor editor)
         {
-            UberGroupState.PushGroup(GetGroupData(editor), GroupName);
+            var parentPath = UberGroupState.GetCurrentPath(editor);
+            var groupPath = UberGroupState.BuildPath(parentPath, GroupName);
+            UberGroupState.PushPath(editor, groupPath);
         }
 
-        protected void EndGroupScope(MaterialEditor editor, string expectedGroup)
+        protected void EndGroupScope(MaterialEditor editor, string expectedPath)
         {
-            var actualGroup = UberGroupState.PopGroup(GetGroupData(editor));
-            if (!string.IsNullOrEmpty(expectedGroup) && actualGroup != expectedGroup)
-                UberDrawerLogger.LogError("Not Corresponded Group Begin-End : " + actualGroup + " - " + expectedGroup);
-        }
-
-        protected string GetParentGroup(MaterialEditor editor, string groupName)
-        {
-            UberDrawerLogger.Log($"GetParentGroup : from {groupName}");
-            // groupNameを考慮して親グループを取得する
-            var groupData = GetGroupData(editor);
-            var groupNest = groupData.GroupNest.ToArray();
-            for (var i = 0; i < groupNest.Length; i++)
-            {
-                UberDrawerLogger.Log($"\t[{i}] : {groupNest[i]} : {groupName == groupNest[i]}");
-                if (groupNest[i] != groupName) continue;
-                if(i < groupNest.Length-1)
-                {
-                    UberDrawerLogger.Log($"\treturn {groupNest[i + 1]}");
-                    return groupNest[i + 1];
-                }
-            }
-            // when i==0 && groupNest[0] == groupName
-            UberDrawerLogger.Log($"\treturn string.Empty");
-            return string.Empty;
-        }
-
-        protected GroupData GetGroupData(MaterialEditor editor)
-        {
-            var mat = GetTargetMaterial(editor);
-            return GroupDataCache.GetOrCreate(mat);
-        }
-        
-        public static Material GetTargetMaterial(MaterialEditor editor)
-        {
-            if (editor == null) return null;
-            if (editor.target is Material mat) return mat;
-
-            var targets = editor.targets;
-            if (targets == null) return null;
-            foreach (var target in targets)
-            {
-                if (target is Material m) return m;
-            }
-            return null;
+            var poppedPath = UberGroupState.PopPath(editor);
+            if (poppedPath != expectedPath)
+                UberDrawerLogger.LogError($"Expected path '{expectedPath}', but popped '{poppedPath}'");
         }
     }
 }
