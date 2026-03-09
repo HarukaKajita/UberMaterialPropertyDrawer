@@ -38,31 +38,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return targets?.FirstOrDefault(target => target is Material) as Material;
         }
         
-        
-        /// <summary>
-        /// Returns whether the current group is visible.
-        /// True only when all ancestor groups up to the direct parent are visible.
-        /// </summary>
-        /// <returns></returns>
         protected bool IsVisibleInGroup(MaterialEditor editor)
         {
             var data = GetGroupData(editor);
-            if (data == null) return true;
-            
-            var currentPath = UberGroupState.GetCurrentPath(editor);
-            
-            var isOutOfGroup = GroupName == "" && currentPath == "";
-            var isInGroupButEmptyGroupName = GroupName == "" && currentPath != "";
-            if (isOutOfGroup) return true;
-            if (isInGroupButEmptyGroupName) return UberGroupState.IsCurrentScopeVisible(data, editor); 
-            
-            var currentGroupMatched = currentPath == GroupName || currentPath.EndsWith("/"+GroupName);
-            if (!currentGroupMatched)
-            {
-                UberDrawerLogger.LogError($"Group [{GroupName}] is written in path [{currentPath}]. fix shader property attribute.");
-                return false;
-            }
-            return UberGroupState.IsCurrentScopeVisible(data, editor);
+            return GroupVisibility.CanShowContent(data, editor, GroupName);
         }
 
         protected float GetVisibleHeight(float visibleHeight, MaterialEditor editor)

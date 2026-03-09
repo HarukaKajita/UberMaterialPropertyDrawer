@@ -26,7 +26,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             UberDrawerLogger.Log($"\t{nameof(groupPath)}:{groupPath}");
             UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
             UberDrawerLogger.Log(GroupName + "のParent" + parentPath + "は" + (parentVisible ? "可視":"不可視"));
-            return parentVisible ? GUIHelper.GroupHeaderHeight : GUIHelper.ClosedHeight;
+            return GroupVisibility.CanShowHeader(data, editor) ? GUIHelper.GroupHeaderHeight : GUIHelper.ClosedHeight;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -47,7 +47,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             UberDrawerLogger.Log(GroupName + "のParent" + parentPath + "は" + (parentVisible ? "可視" : "不可視"));
             _memo = $" parent:{parentPath}";
             var state = UberGroupState.GetExpanded(data, groupPath);
-            if (parentVisible)
+            if (GroupVisibility.CanShowHeader(data, editor))
             {
                 var newState = BeginPanel(position, data, state);
                 if (state != newState)
