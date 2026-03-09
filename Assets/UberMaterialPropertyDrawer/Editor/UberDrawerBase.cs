@@ -56,11 +56,18 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             UberGroupState.PushPath(editor, groupPath);
         }
 
-        protected void EndGroupScope(MaterialEditor editor, string expectedPath)
+        protected void EndGroupScope(MaterialEditor editor)
         {
+            var currentPath = UberGroupState.GetCurrentPath(editor);
+            // check consistency within a declared group and current path
+            var actualGroup = currentPath.Split("/").Last();
+            var isValidPath = GroupName == actualGroup;
+            if (!isValidPath) 
+                UberDrawerLogger.LogWarning($"declared [EndGroup({GroupName})]. but actual group is '{actualGroup}'. Fix shader property attribute '[EndGroup({GroupName})]' to '[EndGroup({actualGroup})]'");
+            
             var poppedPath = UberGroupState.PopPath(editor);
-            if (poppedPath != expectedPath)
-                UberDrawerLogger.LogError($"Expected path '{expectedPath}', but popped '{poppedPath}'");
+            if (poppedPath != currentPath)
+                UberDrawerLogger.LogWarning($"Expected path '{currentPath}', but popped '{poppedPath}'");
         }
     }
 }

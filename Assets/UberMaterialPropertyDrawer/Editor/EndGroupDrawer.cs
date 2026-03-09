@@ -12,7 +12,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             var endGroup = TryEndGroup(editor, prop);
-            if (endGroup) EndGroupScope(editor, UberGroupState.GetCurrentPath(editor));
+            if (endGroup) EndGroupScope(editor);
          
             var data = GetGroupData(editor);
             var parentPath = UberGroupState.GetCurrentPath(editor);
@@ -29,7 +29,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
             var endGroup = TryEndGroup(editor, prop);
-            if (endGroup) EndGroupScope(editor, UberGroupState.GetCurrentPath(editor));
+            if (endGroup) EndGroupScope(editor);
             
             var data = GetGroupData(editor);
             var parentPath = UberGroupState.GetCurrentPath(editor);
