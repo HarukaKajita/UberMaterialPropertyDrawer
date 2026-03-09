@@ -26,7 +26,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return (int)prop.floatValue;
             else if(prop.type == MaterialProperty.PropType.Range)
                 return (int)prop.floatValue;
-            Debug.LogError("Unsupported property type: " + prop.type);
+            Debug.LogError($"Unsupported property type: {prop.type} ({prop.name}).");
             return 0;
         }
         public static void SetInt(MaterialProperty prop, int value)
@@ -38,7 +38,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             else if(prop.type == MaterialProperty.PropType.Range)
                 prop.floatValue = value;
             else
-                Debug.LogError("Unsupported property type: " + prop.type);
+                Debug.LogError($"Unsupported property type: {prop.type} ({prop.name}).");
         }
         
         public static bool GetAsBool(MaterialProperty prop)
@@ -49,14 +49,20 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return prop.floatValue != 0;
             else if(prop.type == MaterialProperty.PropType.Range)
                 return prop.floatValue != 0;
-            Debug.LogError("Unsupported property type: " + prop.type);
+            Debug.LogError($"Unsupported property type: {prop.type} ({prop.name}).");
             return false;
         }
 
         public static void SetBool(MaterialProperty prop, bool value)
         {
-            prop.intValue = value ? 1 : 0;
-            prop.floatValue = value ? 1 : 0;
+            if (prop.type == MaterialProperty.PropType.Int) 
+                prop.intValue = value ? 1 : 0;
+            else if (prop.type == MaterialProperty.PropType.Float)
+                prop.floatValue = value ? 1 : 0;
+            else if (prop.type == MaterialProperty.PropType.Range)
+                prop.floatValue = value ? 1 : 0;
+            else
+                Debug.LogError($"Unsupported property type: {prop.type} ({prop.name}).");
         }
         
         public static Object[] FetchSubAssets(Material mat)
