@@ -42,7 +42,7 @@ Example:
 
 ### Supported drawer types
 - `BeginGroup` / `EndGroup`: Foldout group start/end.
-- `BeginToggleGroup`: Foldout group controlled by a Float/Int toggle property (the property itself is the toggle).
+- `BeginToggleGroup` / `EndGroup`: Foldout group that can pass toggle values to shaders as Float/Int properties.
 - `UberToggle`: Boolean toggle UI for Float/Int properties.
 - `Vector2` / `Vector3`: Compact vector fields with custom label layout.
 - `UberEnum`: Enum popup. Use enum type name or explicit `name, value` pairs.

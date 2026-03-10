@@ -42,7 +42,7 @@ Shader の `Properties` ブロックで Drawer クラス名を直接使います
 
 ### 対応する Drawer
 - `BeginGroup` / `EndGroup`: Foldout グループの開始/終了。
-- `BeginToggleGroup`: Float/Int プロパティのトグルで開閉するグループ。
+- `BeginToggleGroup`: トグルの値をFloat/Intプロパティとしてシェーダーに渡せるグループ。
 - `UberToggle`: Float/Int プロパティ用のトグル UI。
 - `Vector2` / `Vector3`: ラベル配置を調整したベクトル入力。
 - `UberEnum`: Enum のポップアップ。型名指定または `名前, 値` の明示指定に対応。

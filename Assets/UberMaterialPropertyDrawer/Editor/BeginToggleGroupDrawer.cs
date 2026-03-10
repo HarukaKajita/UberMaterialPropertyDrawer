@@ -72,7 +72,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             bgRect.height = style.fixedHeight;
             GUI.Box(bgRect, "", style); // background
             
-            var toggleState = Util.GetAsBool(prop);
+            var isFeatureEnabled = Util.GetAsBool(prop);
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
             var toggleRect = position;
@@ -83,7 +83,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             // 幅が狭くなる影響でトグルのインタラクション領域がなくなって機能しなくなる。
             // インデントで狭くなる分の幅を予め余分に加えておくことで、幅が狭くなる影響を防ぐ。
             toggleRect.width += EditorGUI.indentLevel * GUIHelper.IndentWidth;
-            toggleState = EditorGUI.Toggle(toggleRect, toggleState);
+            isFeatureEnabled = EditorGUI.Toggle(toggleRect, isFeatureEnabled);
 
             var labelRect = toggleRect;
             labelRect.x += buttonWidth + buttonLeftMargin;
@@ -105,7 +105,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (EditorGUI.EndChangeCheck())
             {
                 editor.RegisterPropertyChangeUndo(prop.name);
-                Util.SetBool(prop, toggleState);
+                Util.SetBool(prop, isFeatureEnabled);
             }
             MaterialEditor.EndProperty();
             
