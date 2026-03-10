@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    /// <summary>
+    /// Texture化されるAnimationCurveのデータクラス。
+    /// Materialのサブアセットになる。
+    /// </summary>
     internal class CurveData : ScriptableObject
     {
         // don't rename this field. It is used by CurveTextureDrawer.cs as SerializedProperty

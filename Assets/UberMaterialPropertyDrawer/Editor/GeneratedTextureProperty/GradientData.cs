@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
+    /// <summary>
+    /// Texture化されるGradientのデータクラス。
+    /// Materialのサブアセットになる。
+    /// </summary>
     internal class GradientData : ScriptableObject
     {
         // don't rename this field. It is used by GradientTextureDrawer.cs as SerializedProperty.
