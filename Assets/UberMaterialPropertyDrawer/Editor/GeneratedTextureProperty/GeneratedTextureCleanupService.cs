@@ -9,6 +9,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     internal static class GeneratedTextureCleanupService
     {
+        private static readonly GeneratedTextureAssetCoordinator AssetCoordinator = new();
+
         public static void CleanupMaterial(Material mat, CleanupMode mode)
         {
             if (mat == null) return;
@@ -28,19 +30,31 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 if (generatedData == null) continue;
 
                 var generatedTexture = FindGeneratedTexture(subAssets, generatedData.GeneratedTextureName);
-                if (!TryEnsureMetadata(mat, generatedData, generatedTexture, out var metadataChanged))
-                    continue;
-
-                materialChanged |= metadataChanged;
-
-                if (generatedTexture != null && EnsureGeneratedAssetVisibility(generatedTexture))
+                if (mode == CleanupMode.Interactive)
                 {
-                    EditorUtility.SetDirty(generatedTexture);
-                    materialChanged = true;
+                    if (!ShouldDeleteGeneratedAssetsInteractive(mat, generatedData, generatedTexture, hasShaderDefinitions, generatedPropertyKinds))
+                        continue;
                 }
+                else
+                {
+                    var normalizationResult = AssetCoordinator.Normalize(mat, generatedData, generatedTexture);
+                    if (!normalizationResult.IsValid)
+                    {
+                        UberDrawerLogger.LogWarning($"{normalizationResult.Warning} Material: {mat.name}");
+                        continue;
+                    }
 
-                if (!ShouldDeleteGeneratedAssets(mat, generatedData, generatedTexture, hasShaderDefinitions, generatedPropertyKinds))
-                    continue;
+                    if (normalizationResult.HasAnyChange)
+                    {
+                        EditorUtility.SetDirty(generatedData);
+                        if (generatedTexture != null)
+                            EditorUtility.SetDirty(generatedTexture);
+                        materialChanged = true;
+                    }
+
+                    if (!ShouldDeleteGeneratedAssetsNormalized(mat, generatedData, generatedTexture, hasShaderDefinitions, generatedPropertyKinds))
+                        continue;
+                }
 
                 DisconnectGeneratedTextureReference(mat, generatedData, generatedTexture);
 
@@ -79,43 +93,28 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
         }
 
-        private static bool TryEnsureMetadata(Material mat, GeneratedTextureDataBase generatedData, Texture2D generatedTexture, out bool metadataChanged)
+        private static bool ShouldDeleteGeneratedAssetsInteractive(
+            Material mat,
+            GeneratedTextureDataBase generatedData,
+            Texture2D generatedTexture,
+            bool hasShaderDefinitions,
+            IReadOnlyDictionary<string, string> generatedPropertyKinds)
         {
-            metadataChanged = false;
-            if (generatedData == null) return false;
+            var sourcePropertyName = generatedData.SourcePropertyName;
+            if (string.IsNullOrEmpty(sourcePropertyName)) return false;
+            if (!mat.HasProperty(sourcePropertyName)) return true;
+            if (generatedTexture == null) return true;
 
-            if (!generatedData.HasCompleteMetadata)
-            {
-                if (!generatedData.TryBackfillMetadata(out var warning))
-                {
-                    UberDrawerLogger.LogWarning($"{warning} Material: {mat.name}");
-                    return false;
-                }
+            var currentTexture = mat.GetTexture(sourcePropertyName);
+            if (currentTexture != generatedTexture) return true;
 
-                EditorUtility.SetDirty(generatedData);
-                metadataChanged = true;
-            }
-
-            Texture textureSource = generatedTexture;
-            if (textureSource == null && !string.IsNullOrEmpty(generatedData.SourcePropertyName) && mat.HasProperty(generatedData.SourcePropertyName))
-                textureSource = mat.GetTexture(generatedData.SourcePropertyName);
-
-            if (generatedData.TryBackfillTextureSettings(textureSource))
-            {
-                EditorUtility.SetDirty(generatedData);
-                metadataChanged = true;
-            }
-
-            if (EnsureGeneratedAssetVisibility(generatedData))
-            {
-                EditorUtility.SetDirty(generatedData);
-                metadataChanged = true;
-            }
-
-            return true;
+            if (!hasShaderDefinitions) return false;
+            if (string.IsNullOrEmpty(generatedData.GeneratorKind)) return false;
+            if (!generatedPropertyKinds.TryGetValue(sourcePropertyName, out var generatorKind)) return true;
+            return !string.Equals(generatorKind, generatedData.GeneratorKind, StringComparison.Ordinal);
         }
 
-        private static bool ShouldDeleteGeneratedAssets(
+        private static bool ShouldDeleteGeneratedAssetsNormalized(
             Material mat,
             GeneratedTextureDataBase generatedData,
             Texture2D generatedTexture,
@@ -183,18 +182,5 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             return null;
         }
-
-        private static bool EnsureGeneratedAssetVisibility(Object asset)
-        {
-            if (asset == null) return false;
-
-            const HideFlags generatedAssetHideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
-            var nextHideFlags = asset.hideFlags | generatedAssetHideFlags;
-            if (nextHideFlags == asset.hideFlags) return false;
-
-            asset.hideFlags = nextHideFlags;
-            return true;
-        }
     }
 }
-

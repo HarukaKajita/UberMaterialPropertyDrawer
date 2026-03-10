@@ -12,6 +12,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// <typeparam name="TData"></typeparam>
     internal sealed class MaterialSubAssetStore<TData> where TData : GeneratedTextureDataBase
     {
+        private readonly GeneratedTextureAssetCoordinator _assetCoordinator = new();
+
         public GeneratedTextureBinding<TData>[] EnsureBindings(Material[] materials, string propertyName, string dataAssetName, string textureAssetName)
         {
             if (materials == null || materials.Length == 0) return Array.Empty<GeneratedTextureBinding<TData>>();
@@ -36,37 +38,33 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 data = ScriptableObject.CreateInstance<TData>();
                 data.name = dataAssetName;
-                ApplyGeneratedAssetVisibility(data);
                 AssetDatabase.AddObjectToAsset(data, mat);
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(mat);
                 requiresSave = true;
             }
 
-            if (data.SyncMetadata(propertyName, textureAssetName))
-            {
-                EditorUtility.SetDirty(data);
-                EditorUtility.SetDirty(mat);
-                requiresSave = true;
-            }
-
             var subAssetTexture = Util.FetchSubAssetTexture(mat, textureAssetName);
+            var normalizationResult = _assetCoordinator.Normalize(mat, data, subAssetTexture, propertyName, textureAssetName);
+            if (!normalizationResult.IsValid)
+                throw new InvalidOperationException(normalizationResult.Warning ?? "Generated texture normalization failed.");
+
             var materialTexture = mat.GetTexture(propertyName) as Texture2D;
-            if (data.TryBackfillTextureSettings(subAssetTexture != null ? subAssetTexture : materialTexture))
+            if (normalizationResult.MetadataChanged || normalizationResult.SettingsChanged || normalizationResult.VisibilityChanged)
             {
                 EditorUtility.SetDirty(data);
                 EditorUtility.SetDirty(mat);
                 requiresSave = true;
             }
 
-            if (ApplyGeneratedAssetVisibility(data))
+            if (subAssetTexture != null && normalizationResult.VisibilityChanged)
             {
-                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(subAssetTexture);
                 EditorUtility.SetDirty(mat);
                 requiresSave = true;
             }
 
-            if (subAssetTexture == null || data.HasColorSpaceMismatch(subAssetTexture))
+            if (normalizationResult.RequiresTextureRecreation)
             {
                 if (subAssetTexture != null)
                 {
@@ -94,13 +92,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 requiresSave = true;
             }
 
-            if (subAssetTexture != null && ApplyGeneratedAssetVisibility(subAssetTexture))
-            {
-                EditorUtility.SetDirty(subAssetTexture);
-                EditorUtility.SetDirty(mat);
-                requiresSave = true;
-            }
-
             if (materialTexture != subAssetTexture)
             {
                 mat.SetTexture(propertyName, subAssetTexture);
@@ -113,7 +104,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             return new GeneratedTextureBinding<TData>(mat, data, subAssetTexture);
         }
-        
+
         private static TData FetchDataAsset(Material mat, string dataName)
         {
             return Util.FetchSubAssets(mat).OfType<TData>().FirstOrDefault(a => a.name == dataName);
@@ -123,21 +114,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false, data.UsesLinearColorSpace)
             {
-                name = textureAssetName
+                name = textureAssetName,
+                hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector
             };
-            ApplyGeneratedAssetVisibility(texture);
             data.ApplyStoredTextureSettings(texture);
             return texture;
-        }
-
-        private static bool ApplyGeneratedAssetVisibility(Object asset)
-        {
-            const HideFlags generatedAssetHideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
-            var nextHideFlags = asset.hideFlags | generatedAssetHideFlags;
-            if (nextHideFlags == asset.hideFlags) return false;
-
-            asset.hideFlags = nextHideFlags;
-            return true;
         }
     }
 }
