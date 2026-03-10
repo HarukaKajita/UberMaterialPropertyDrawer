@@ -78,6 +78,7 @@ For `Vector2`, `Vector3`, and `UberToggle`, the group name can be omitted:
 - Drawer state (foldout open/close) is tracked per group name.
 - Curve/gradient data is stored as sub-assets inside the material.
 - Generated textures are also stored as material sub-assets and assigned to the property.
+- Generated data and textures are treated as material-local cache and are automatically cleaned up when the corresponding generated texture property is removed or changed.
 
 ## Tips
 - Use Float or Int properties for toggle-driven drawers (`BeginToggleGroup`, `UberToggle`).

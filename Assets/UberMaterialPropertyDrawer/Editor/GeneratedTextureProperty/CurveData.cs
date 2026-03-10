@@ -6,13 +6,17 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// Texture化されるAnimationCurveのデータクラス。
     /// Materialのサブアセットになる。
     /// </summary>
-    internal class CurveData : ScriptableObject
+    internal class CurveData : GeneratedTextureDataBase
     {
         // don't rename this field. It is used by CurveTextureDrawer.cs as SerializedProperty
         public AnimationCurve curveR = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveG = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveB = AnimationCurve.Linear(0, 0, 1, 1);
         public AnimationCurve curveA = AnimationCurve.Linear(0, 0, 1, 1);
+
+        protected override string DefaultGeneratorKind => CurveTextureGeneratorKind;
+        protected override string DataNameSuffix => "_CurveData";
+        protected override string TextureNameSuffix => "_CurveTex";
 
         public void BakeTo(ref Texture2D tex, int resolution, bool accumulate, bool useHalfTexture, TextureFormat format, string texName)
         {

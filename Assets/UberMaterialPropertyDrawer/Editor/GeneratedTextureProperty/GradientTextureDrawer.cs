@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,12 +5,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     internal sealed class GradientTextureDrawer: GeneratedTextureDrawerBase<GradientData, GeneratedTextureOptions>
     {
-
         public GradientTextureDrawer(string groupName, params string[] args) : base(groupName, args)
         {
         }
 
-        
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");

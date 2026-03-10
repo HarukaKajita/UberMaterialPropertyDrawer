@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -21,10 +23,19 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             // ".glslinc"
         };
 
+        static readonly HashSet<string> k_ShaderAssetExts = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".shader",
+            ".shadergraph"
+        };
+
         static bool s_scheduled;
 
         static bool IsWatched(string path)
             => k_WatchExts.Contains(System.IO.Path.GetExtension(path));
+
+        static bool IsShaderAsset(string path)
+            => k_ShaderAssetExts.Contains(System.IO.Path.GetExtension(path));
 
         static void OnPostprocessAllAssets(
             string[] importedAssets,
@@ -41,7 +52,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (!touched) return;
 
-            // 連打されるので、1フレーム後にまとめて1回だけ
+            var affectedShaders = importedAssets
+                .Concat(movedAssets)
+                .Where(IsShaderAsset)
+                .Select(AssetDatabase.LoadAssetAtPath<Shader>)
+                .Where(shader => shader != null)
+                .ToArray();
+
+            var requiresFullCleanup = deletedAssets.Any(IsShaderAsset) || movedFromAssetPaths.Any(IsShaderAsset);
+
             if (s_scheduled) return;
             s_scheduled = true;
 
@@ -49,6 +68,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 s_scheduled = false;
                 GroupDataCache.InvalidateByDependencyHash(invalidateNonAssetMaterials: true);
+
+                if (requiresFullCleanup)
+                {
+                    GeneratedTextureCleanupService.CleanupAllAffectedMaterials(null, CleanupMode.Import);
+                    return;
+                }
+
+                if (affectedShaders.Length == 0) return;
+                GeneratedTextureCleanupService.CleanupAllAffectedMaterials(affectedShaders, CleanupMode.Import);
             };
         }
     }
