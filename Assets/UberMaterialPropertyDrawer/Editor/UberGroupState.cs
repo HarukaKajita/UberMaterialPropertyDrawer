@@ -18,6 +18,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (editor == null) return;
             var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            renderState.PathStack.Clear();
             renderState.PushedProperties.Clear();
             renderState.PoppedProperties.Clear();
         }
@@ -156,13 +157,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 renderState.PushedProperties.Clear();
                 renderState.PoppedProperties.Clear();
             }
-        }
-        
-        internal static void ResetNest(MaterialEditor editor)
-        {
-            if (editor == null) return;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
-            renderState.PathStack.Clear();
         }
         
         public static string BuildPath(string parentPath, string groupName)
