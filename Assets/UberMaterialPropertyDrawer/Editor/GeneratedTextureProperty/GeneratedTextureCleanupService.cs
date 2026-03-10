@@ -27,12 +27,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             {
                 if (generatedData == null) continue;
 
-                if (!TryEnsureMetadata(mat, generatedData, out var metadataChanged))
+                var generatedTexture = FindGeneratedTexture(subAssets, generatedData.GeneratedTextureName);
+                if (!TryEnsureMetadata(mat, generatedData, generatedTexture, out var metadataChanged))
                     continue;
 
                 materialChanged |= metadataChanged;
 
-                var generatedTexture = FindGeneratedTexture(subAssets, generatedData.GeneratedTextureName);
                 if (generatedTexture != null && EnsureGeneratedAssetVisibility(generatedTexture))
                 {
                     EditorUtility.SetDirty(generatedTexture);
@@ -79,7 +79,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
         }
 
-        private static bool TryEnsureMetadata(Material mat, GeneratedTextureDataBase generatedData, out bool metadataChanged)
+        private static bool TryEnsureMetadata(Material mat, GeneratedTextureDataBase generatedData, Texture2D generatedTexture, out bool metadataChanged)
         {
             metadataChanged = false;
             if (generatedData == null) return false;
@@ -92,6 +92,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     return false;
                 }
 
+                EditorUtility.SetDirty(generatedData);
+                metadataChanged = true;
+            }
+
+            Texture textureSource = generatedTexture;
+            if (textureSource == null && !string.IsNullOrEmpty(generatedData.SourcePropertyName) && mat.HasProperty(generatedData.SourcePropertyName))
+                textureSource = mat.GetTexture(generatedData.SourcePropertyName);
+
+            if (generatedData.TryBackfillTextureSettings(textureSource))
+            {
                 EditorUtility.SetDirty(generatedData);
                 metadataChanged = true;
             }

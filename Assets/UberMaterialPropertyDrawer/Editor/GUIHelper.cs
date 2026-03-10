@@ -9,10 +9,16 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         internal static readonly float GroupHeaderHeight = 22f;
         internal static readonly float GroupHeaderTopPadding = 0f;
         internal static readonly float SingleLineHeight = EditorGUIUtility.singleLineHeight;
-        internal static readonly float TexturePropertyHeight = SingleLineHeight *3.5f;
-        internal static readonly float TillingOffsetPropertyHeight = SingleLineHeight *2f+2;
+        internal static readonly float VerticalSpacing = EditorGUIUtility.standardVerticalSpacing;
+        internal static readonly float TexturePropertyHeight = SingleLineHeight * 3.5f;
+        internal static readonly float TillingOffsetPropertyHeight = SingleLineHeight * 2f + 2;
         internal static readonly float ClosedHeight = -EditorGUIUtility.standardVerticalSpacing;
         internal static float GetIndentWidth() => EditorGUI.indentLevel * IndentWidth;
+        internal static float GetLineBlockHeight(int lineCount)
+        {
+            if (lineCount <= 0) return 0f;
+            return SingleLineHeight * lineCount + VerticalSpacing * (lineCount - 1);
+        }
         internal static Rect Indent(Rect rect, bool shrinkWidth = false)
         {
             var x = rect.x + GetIndentWidth();

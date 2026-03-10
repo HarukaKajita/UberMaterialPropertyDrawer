@@ -10,7 +10,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     {
         public Material Material { get; }
         public TData Data { get; }
-        public Texture2D Texture { get; }
+        public Texture2D Texture { get; set; }
         
         public GeneratedTextureBinding(Material material, TData data, Texture2D texture)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
@@ -8,13 +9,29 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public const string CurveTextureGeneratorKind = "CurveTexture";
         public const string GradientTextureGeneratorKind = "GradientTexture";
 
+        private const TextureWrapMode DefaultWrapMode = TextureWrapMode.Clamp;
+        private const FilterMode DefaultFilterMode = FilterMode.Bilinear;
+        private const int DefaultAnisoLevel = 1;
+        private const GeneratedTextureColorSpace DefaultColorSpace = GeneratedTextureColorSpace.Linear;
+
         [SerializeField] private string _sourcePropertyName;
         [SerializeField] private string _generatorKind;
         [SerializeField] private string _generatedTextureName;
+        [SerializeField] private TextureWrapMode _wrapMode = DefaultWrapMode;
+        [SerializeField] private FilterMode _filterMode = DefaultFilterMode;
+        [SerializeField] private int _anisoLevel = DefaultAnisoLevel;
+        [SerializeField] private GeneratedTextureColorSpace _colorSpace = DefaultColorSpace;
+        [SerializeField] private bool _hasTextureSettings;
 
         public string SourcePropertyName => _sourcePropertyName;
         public string GeneratorKind => _generatorKind;
         public string GeneratedTextureName => _generatedTextureName;
+        internal TextureWrapMode WrapMode => _wrapMode;
+        internal FilterMode FilterMode => _filterMode;
+        internal int AnisoLevel => Mathf.Clamp(_anisoLevel, 0, 16);
+        internal GeneratedTextureColorSpace ColorSpace => _colorSpace;
+        internal bool UsesLinearColorSpace => _colorSpace == GeneratedTextureColorSpace.Linear;
+        internal bool HasTextureSettings => _hasTextureSettings;
 
         public bool HasCompleteMetadata =>
             !string.IsNullOrEmpty(_sourcePropertyName) &&
@@ -34,6 +51,23 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return changed;
         }
 
+        internal bool SyncStoredTextureSettings(
+            TextureWrapMode wrapMode,
+            FilterMode filterMode,
+            int anisoLevel,
+            GeneratedTextureColorSpace colorSpace)
+        {
+            anisoLevel = Mathf.Clamp(anisoLevel, 0, 16);
+
+            var changed = false;
+            changed |= SetIfDifferent(ref _wrapMode, wrapMode);
+            changed |= SetIfDifferent(ref _filterMode, filterMode);
+            changed |= SetIfDifferent(ref _anisoLevel, anisoLevel);
+            changed |= SetIfDifferent(ref _colorSpace, colorSpace);
+            changed |= SetIfDifferent(ref _hasTextureSettings, true);
+            return changed;
+        }
+
         public bool TryBackfillMetadata(out string warning)
         {
             warning = null;
@@ -49,6 +83,56 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return true;
         }
 
+        internal bool TryBackfillTextureSettings(Texture sourceTexture)
+        {
+            if (_hasTextureSettings) return false;
+
+            var wrapMode = sourceTexture != null ? sourceTexture.wrapMode : DefaultWrapMode;
+            var filterMode = sourceTexture != null ? sourceTexture.filterMode : DefaultFilterMode;
+            var anisoLevel = sourceTexture != null ? Mathf.Clamp(sourceTexture.anisoLevel, 0, 16) : DefaultAnisoLevel;
+            var colorSpace = ResolveColorSpace(sourceTexture);
+            return SyncStoredTextureSettings(wrapMode, filterMode, anisoLevel, colorSpace);
+        }
+
+        internal bool ApplyStoredTextureSettings(Texture texture)
+        {
+            if (texture == null) return false;
+
+            var changed = false;
+            if (texture.wrapMode != WrapMode)
+            {
+                texture.wrapMode = WrapMode;
+                changed = true;
+            }
+
+            if (texture.filterMode != FilterMode)
+            {
+                texture.filterMode = FilterMode;
+                changed = true;
+            }
+
+            if (texture.anisoLevel != AnisoLevel)
+            {
+                texture.anisoLevel = AnisoLevel;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        internal bool HasSamplerStateMismatch(Texture texture)
+        {
+            if (texture == null) return true;
+            return texture.wrapMode != WrapMode || texture.filterMode != FilterMode || texture.anisoLevel != AnisoLevel;
+        }
+
+        internal bool HasColorSpaceMismatch(Texture texture)
+        {
+            if (texture == null) return true;
+            var expectsSrgb = ColorSpace == GeneratedTextureColorSpace.Srgb;
+            return texture.isDataSRGB != expectsSrgb;
+        }
+
         private bool TryInferSourcePropertyName(string assetName, out string sourcePropertyName)
         {
             sourcePropertyName = null;
@@ -62,9 +146,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return !string.IsNullOrEmpty(sourcePropertyName);
         }
 
-        private static bool SetIfDifferent(ref string currentValue, string nextValue)
+        private static GeneratedTextureColorSpace ResolveColorSpace(Texture sourceTexture)
         {
-            if (string.Equals(currentValue, nextValue, StringComparison.Ordinal)) return false;
+            if (sourceTexture == null) return DefaultColorSpace;
+            return sourceTexture.isDataSRGB ? GeneratedTextureColorSpace.Srgb : GeneratedTextureColorSpace.Linear;
+        }
+
+        private static bool SetIfDifferent<T>(ref T currentValue, T nextValue)
+        {
+            if (EqualityComparer<T>.Default.Equals(currentValue, nextValue)) return false;
             currentValue = nextValue;
             return true;
         }

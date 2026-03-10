@@ -5,14 +5,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     internal sealed class CurveTextureDrawer: GeneratedTextureDrawerBase<CurveData, CurveTextureOptions>
     {
+        protected override int DetailLineCount => 4;
+
         public CurveTextureDrawer(string groupName, params string[] args) : base(groupName, args)
         {
-        }
-        
-        public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
-        {
-            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
-            return GetVisibleHeight(GUIHelper.TexturePropertyHeight, editor);
         }
 
         protected override CurveTextureOptions ParseOptions(string[] args)
@@ -47,6 +43,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             foreach (var tex in textures)
             {
+                if (tex == null) return true;
+
                 var correctFormat = options.CommonOptions.ResolveTextureFormat();
                 var res = options.CommonOptions.Resolution;
                 if (tex.width != res || tex.height != 1 || tex.format != correctFormat)
@@ -61,15 +59,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var curveGSp = so.FindProperty("curveG");
             var curveBSp = so.FindProperty("curveB");
             var curveASp = so.FindProperty("curveA");
-            EditorGUI.PropertyField(position, curveRSp, GUIContent.none);
-            position.y += position.height;
-            EditorGUI.PropertyField(position, curveGSp, GUIContent.none);
-            position.y += position.height;
-            EditorGUI.PropertyField(position, curveBSp, GUIContent.none);
-            position.y += position.height;
-            EditorGUI.PropertyField(position, curveASp, GUIContent.none);
-            position.y += position.height;
-            so.ApplyModifiedProperties();
+
+            var lineRect = new Rect(position.x, position.y, position.width, GUIHelper.SingleLineHeight);
+            EditorGUI.PropertyField(lineRect, curveRSp, GUIContent.none);
+            lineRect.y += GUIHelper.SingleLineHeight + GUIHelper.VerticalSpacing;
+            EditorGUI.PropertyField(lineRect, curveGSp, GUIContent.none);
+            lineRect.y += GUIHelper.SingleLineHeight + GUIHelper.VerticalSpacing;
+            EditorGUI.PropertyField(lineRect, curveBSp, GUIContent.none);
+            lineRect.y += GUIHelper.SingleLineHeight + GUIHelper.VerticalSpacing;
+            EditorGUI.PropertyField(lineRect, curveASp, GUIContent.none);
         }
 
         protected override void Bake(CurveData data, ref Texture2D tex, CurveTextureOptions options, string texName)
@@ -78,7 +76,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var accum = options.Accumulate;
             var useHalfTex = options.CommonOptions.UseHalfTexture;
             var format = options.CommonOptions.ResolveTextureFormat();
-            data.BakeTo(ref tex, res, accum, useHalfTex, format, texName);
+            data.BakeTo(ref tex, res, accum, useHalfTex, format, texName, data.UsesLinearColorSpace);
         }
     }
 }

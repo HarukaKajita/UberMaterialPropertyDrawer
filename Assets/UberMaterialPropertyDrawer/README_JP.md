@@ -77,7 +77,7 @@ Shader の `Properties` ブロックで Drawer クラス名を直接使います
 ## 仕組み
 - グループの開閉状態はグループ名ごとに保持されます。
 - カーブ/グラデーションのデータはマテリアルのサブアセットとして保存されます。
-- 生成されたテクスチャもサブアセットとして保存され、プロパティに自動設定されます。
+- 生成されたテクスチャもサブアセットとして保存され、プロパティに自動設定されます。`WrapMode` / `FilterMode` / `AnisoLevel` / `Color Space` は Inspector から編集でき、generated texture に同期されます。
 - 生成されたデータとテクスチャは material-local cache として扱われ、対応する generated texture property が削除または変更された場合は自動でクリーンアップされます。
 
 ## Tips

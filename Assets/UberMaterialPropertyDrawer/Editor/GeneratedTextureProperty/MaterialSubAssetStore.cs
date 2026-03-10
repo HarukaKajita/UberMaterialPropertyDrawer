@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -13,7 +14,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     {
         public GeneratedTextureBinding<TData>[] EnsureBindings(Material[] materials, string propertyName, string dataAssetName, string textureAssetName)
         {
-            if (materials == null || materials.Length == 0) return null;
+            if (materials == null || materials.Length == 0) return Array.Empty<GeneratedTextureBinding<TData>>();
             return materials.Select(mat => EnsureBindings(mat, propertyName, dataAssetName, textureAssetName)).ToArray();
         }
 
@@ -28,7 +29,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 throw new ArgumentException("dataAssetName cannot be null or empty", nameof(dataAssetName));
             if (string.IsNullOrEmpty(textureAssetName))
                 throw new ArgumentException("textureAssetName cannot be null or empty", nameof(textureAssetName));
-            
+
             var requiresSave = false;
             var data = FetchDataAsset(mat, dataAssetName);
             if (data == null)
@@ -49,6 +50,15 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 requiresSave = true;
             }
 
+            var subAssetTexture = Util.FetchSubAssetTexture(mat, textureAssetName);
+            var materialTexture = mat.GetTexture(propertyName) as Texture2D;
+            if (data.TryBackfillTextureSettings(subAssetTexture != null ? subAssetTexture : materialTexture))
+            {
+                EditorUtility.SetDirty(data);
+                EditorUtility.SetDirty(mat);
+                requiresSave = true;
+            }
+
             if (ApplyGeneratedAssetVisibility(data))
             {
                 EditorUtility.SetDirty(data);
@@ -56,28 +66,32 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 requiresSave = true;
             }
 
-            var subAssetTexture = Util.FetchSubAssetTexture(mat, textureAssetName);
-            var materialTexture = mat.GetTexture(propertyName);
-            if (subAssetTexture == null || subAssetTexture != materialTexture)
+            if (subAssetTexture == null || data.HasColorSpaceMismatch(subAssetTexture))
             {
                 if (subAssetTexture != null)
                 {
-                    mat.SetTexture(propertyName, subAssetTexture);
-                    EditorUtility.SetDirty(mat);
+                    if (materialTexture == subAssetTexture)
+                    {
+                        mat.SetTexture(propertyName, null);
+                        EditorUtility.SetDirty(mat);
+                    }
+
+                    Object.DestroyImmediate(subAssetTexture, true);
                     requiresSave = true;
                 }
-                else
-                {
-                    var texture = new Texture2D(1,1,TextureFormat.RGBA32, false, true);
-                    texture.name = textureAssetName;
-                    ApplyGeneratedAssetVisibility(texture);
-                    AssetDatabase.AddObjectToAsset(texture, mat);
-                    EditorUtility.SetDirty(texture);
-                    EditorUtility.SetDirty(mat);
-                    subAssetTexture = texture;
-                    mat.SetTexture(propertyName, subAssetTexture);
-                    requiresSave = true;
-                }
+
+                subAssetTexture = CreateGeneratedTexture(textureAssetName, data);
+                AssetDatabase.AddObjectToAsset(subAssetTexture, mat);
+                EditorUtility.SetDirty(subAssetTexture);
+                EditorUtility.SetDirty(mat);
+                requiresSave = true;
+            }
+
+            if (subAssetTexture != null && data.ApplyStoredTextureSettings(subAssetTexture))
+            {
+                EditorUtility.SetDirty(subAssetTexture);
+                EditorUtility.SetDirty(mat);
+                requiresSave = true;
             }
 
             if (subAssetTexture != null && ApplyGeneratedAssetVisibility(subAssetTexture))
@@ -87,23 +101,36 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 requiresSave = true;
             }
 
-            if (requiresSave)
+            if (materialTexture != subAssetTexture)
             {
-                Util.DelaySaveAsset(mat);
+                mat.SetTexture(propertyName, subAssetTexture);
+                EditorUtility.SetDirty(mat);
+                requiresSave = true;
             }
 
-            var binding = new GeneratedTextureBinding<TData>(mat, data, subAssetTexture);
-            return binding;
+            if (requiresSave)
+                Util.DelaySaveAsset(mat);
+
+            return new GeneratedTextureBinding<TData>(mat, data, subAssetTexture);
         }
         
-        private TData FetchDataAsset(Material mat, string dataName)
+        private static TData FetchDataAsset(Material mat, string dataName)
         {
-            var subAssets = Util.FetchSubAssets(mat);
-            var data = subAssets.OfType<TData>().FirstOrDefault(a => a.name == dataName);
-            return data;
+            return Util.FetchSubAssets(mat).OfType<TData>().FirstOrDefault(a => a.name == dataName);
         }
 
-        private static bool ApplyGeneratedAssetVisibility(UnityEngine.Object asset)
+        private static Texture2D CreateGeneratedTexture(string textureAssetName, GeneratedTextureDataBase data)
+        {
+            var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false, data.UsesLinearColorSpace)
+            {
+                name = textureAssetName
+            };
+            ApplyGeneratedAssetVisibility(texture);
+            data.ApplyStoredTextureSettings(texture);
+            return texture;
+        }
+
+        private static bool ApplyGeneratedAssetVisibility(Object asset)
         {
             const HideFlags generatedAssetHideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
             var nextHideFlags = asset.hideFlags | generatedAssetHideFlags;

@@ -15,11 +15,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         protected override string DataNameSuffix => "_GradientData";
         protected override string TextureNameSuffix => "_GradientTex";
         
-        public void BakeTo(ref Texture2D tex, int resolution, TextureFormat format, string texName)
+        public void BakeTo(ref Texture2D tex, int resolution, TextureFormat format, string texName, bool linear)
         {
             if (tex == null)
             {
-                tex = new Texture2D(resolution, 1, format, true, true);
+                tex = new Texture2D(resolution, 1, format, true, linear);
                 tex.name = texName;
             }
             else if (tex.width != resolution || tex.height != 1 || tex.format != format)

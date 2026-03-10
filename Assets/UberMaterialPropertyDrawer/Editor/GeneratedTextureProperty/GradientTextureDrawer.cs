@@ -5,14 +5,10 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 {
     internal sealed class GradientTextureDrawer: GeneratedTextureDrawerBase<GradientData, GeneratedTextureOptions>
     {
+        protected override int DetailLineCount => 1;
+
         public GradientTextureDrawer(string groupName, params string[] args) : base(groupName, args)
         {
-        }
-
-        public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
-        {
-            UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
-            return GetVisibleHeight(GUIHelper.TexturePropertyHeight, editor);
         }
         
         protected override GeneratedTextureOptions ParseOptions(string[] args)
@@ -45,6 +41,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             foreach (var tex in textures)
             {
+                if (tex == null) return true;
+
                 var correctFormat = options.ResolveTextureFormat();
                 var res = options.Resolution;
                 if (tex.width != res || tex.height != 1 || tex.format != correctFormat)
@@ -56,14 +54,13 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         protected override void DrawDetailFields(Rect position, SerializedObject so)
         {
             var gradientSp = so.FindProperty("gradient");
-            EditorGUI.PropertyField(position, gradientSp, GUIContent.none);
-            position.y += position.height;
-            so.ApplyModifiedProperties();
+            var lineRect = new Rect(position.x, position.y, position.width, GUIHelper.SingleLineHeight);
+            EditorGUI.PropertyField(lineRect, gradientSp, GUIContent.none);
         }
 
         protected override void Bake(GradientData data, ref Texture2D tex, GeneratedTextureOptions options, string texName)
         {
-            data.BakeTo(ref tex, options.Resolution, options.ResolveTextureFormat(), texName);
+            data.BakeTo(ref tex, options.Resolution, options.ResolveTextureFormat(), texName, data.UsesLinearColorSpace);
         }
     }
 }

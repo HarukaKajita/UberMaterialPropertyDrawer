@@ -77,7 +77,7 @@ For `Vector2`, `Vector3`, and `UberToggle`, the group name can be omitted:
 ## How it works
 - Drawer state (foldout open/close) is tracked per group name.
 - Curve/gradient data is stored as sub-assets inside the material.
-- Generated textures are also stored as material sub-assets and assigned to the property.
+- Generated textures are also stored as material sub-assets and assigned to the property. `WrapMode`, `FilterMode`, `AnisoLevel`, and `Color Space` can be edited from the Inspector and are synchronized back to the generated texture.
 - Generated data and textures are treated as material-local cache and are automatically cleaned up when the corresponding generated texture property is removed or changed.
 
 ## Tips
