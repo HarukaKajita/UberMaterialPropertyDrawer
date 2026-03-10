@@ -87,6 +87,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (string.IsNullOrEmpty(groupPath) || data == null) return;
             data.ExpansionState.ExpandedByPath[groupPath] = state;
+            InspectorRepainter.RepaintAllInspector();
         }
 
         /// <summary>
