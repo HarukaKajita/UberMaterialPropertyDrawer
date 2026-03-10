@@ -124,9 +124,6 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                     EditorUtility.SetDirty(texture);
                 EditorUtility.SetDirty(binding.Material);
             }
-
-            foreach (var material in bindings.Select(binding => binding.Material).Distinct())
-                Util.DelaySaveAsset(material);
         }
 
         private static bool HasTextureSettingMismatch(GeneratedTextureBinding<TData>[] bindings)
