@@ -11,7 +11,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     /// <typeparam name="TOption"></typeparam>
-    public abstract class GeneratedTextureDrawerBase<TData, TOption> : UberDrawerBase where TData : GeneratedTextureDataBase
+    public abstract class GeneratedTextureDrawerBase<TData, TOption> : UberDrawerBase where TData : GeneratedTextureDataAssetBase
     {
         private const float ContentSpacing = 4f;
         private readonly TOption _textureOptions;
@@ -248,3 +248,4 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
     }
 }
+

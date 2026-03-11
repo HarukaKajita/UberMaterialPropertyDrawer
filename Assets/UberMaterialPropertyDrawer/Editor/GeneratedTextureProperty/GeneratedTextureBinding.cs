@@ -6,7 +6,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// Holds the generated data and texture bound to a material.
     /// </summary>
     /// <typeparam name="TData"></typeparam>
-    internal sealed class GeneratedTextureBinding<TData> where TData : GeneratedTextureDataBase
+    internal sealed class GeneratedTextureBinding<TData> where TData : GeneratedTextureDataAssetBase
     {
         public Material Material { get; }
         public TData Data { get; }
@@ -20,3 +20,4 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
     }
 }
+

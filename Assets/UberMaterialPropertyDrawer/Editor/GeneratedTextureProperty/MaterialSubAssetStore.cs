@@ -10,7 +10,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// Materialのサブアセットの探索、生成、保存を管理するクラス
     /// </summary>
     /// <typeparam name="TData"></typeparam>
-    internal sealed class MaterialSubAssetStore<TData> where TData : GeneratedTextureDataBase
+    internal sealed class MaterialSubAssetStore<TData> where TData : GeneratedTextureDataAssetBase
     {
         private readonly GeneratedTextureAssetCoordinator _assetCoordinator = new();
 
@@ -110,7 +110,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return Util.FetchSubAssets(mat).OfType<TData>().FirstOrDefault(a => a.name == dataName);
         }
 
-        private static Texture2D CreateGeneratedTexture(string textureAssetName, GeneratedTextureDataBase data)
+        private static Texture2D CreateGeneratedTexture(string textureAssetName, GeneratedTextureDataAssetBase data)
         {
             var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false, data.UsesLinearColorSpace)
             {

@@ -8,7 +8,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         public GeneratedTextureNormalizationResult Normalize(
             Material material,
-            GeneratedTextureDataBase generatedData,
+            GeneratedTextureDataAssetBase generatedData,
             Texture2D generatedTexture,
             string sourcePropertyName = null,
             string generatedTextureName = null)
@@ -38,7 +38,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
 
         private static bool NormalizeMetadata(
-            GeneratedTextureDataBase generatedData,
+            GeneratedTextureDataAssetBase generatedData,
             string sourcePropertyName,
             string generatedTextureName,
             out string warning)
@@ -57,7 +57,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return false;
         }
 
-        private static Texture ResolveTextureSource(Material material, GeneratedTextureDataBase generatedData, Texture2D generatedTexture)
+        private static Texture ResolveTextureSource(Material material, GeneratedTextureDataAssetBase generatedData, Texture2D generatedTexture)
         {
             if (generatedTexture != null)
                 return generatedTexture;

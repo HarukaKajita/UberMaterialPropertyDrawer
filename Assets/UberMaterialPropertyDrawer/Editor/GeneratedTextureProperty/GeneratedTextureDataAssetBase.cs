@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
-    public abstract class GeneratedTextureDataBase : ScriptableObject
+    public abstract class GeneratedTextureDataAssetBase : ScriptableObject
     {
         public const string CurveTextureGeneratorKind = "CurveTexture";
         public const string GradientTextureGeneratorKind = "GradientTexture";
@@ -160,3 +160,4 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
     }
 }
+

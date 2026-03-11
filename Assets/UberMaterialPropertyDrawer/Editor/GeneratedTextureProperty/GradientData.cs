@@ -6,7 +6,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// Texture化されるGradientのデータクラス。
     /// Materialのサブアセットになる。
     /// </summary>
-    internal class GradientData : GeneratedTextureDataBase
+    internal class GradientData : GeneratedTextureDataAssetBase
     {
         // don't rename this field. It is used by GradientTextureDrawer.cs as SerializedProperty.
         [GradientUsage(true)] public Gradient gradient = new();
@@ -36,3 +36,4 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
     }
 }
+

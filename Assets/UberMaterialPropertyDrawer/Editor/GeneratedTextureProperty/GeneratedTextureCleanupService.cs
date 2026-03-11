@@ -16,7 +16,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (mat == null) return;
 
             var subAssets = Util.FetchSubAssets(mat).Where(asset => asset != null).ToList();
-            var generatedDataAssets = subAssets.OfType<GeneratedTextureDataBase>().ToArray();
+            var generatedDataAssets = subAssets.OfType<GeneratedTextureDataAssetBase>().ToArray();
             if (generatedDataAssets.Length == 0) return;
 
             var hasShaderDefinitions = GeneratedTextureShaderDefinitionReader.TryReadGeneratedPropertyKinds(
@@ -95,7 +95,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool ShouldDeleteGeneratedAssetsInteractive(
             Material mat,
-            GeneratedTextureDataBase generatedData,
+            GeneratedTextureDataAssetBase generatedData,
             Texture2D generatedTexture,
             bool hasShaderDefinitions,
             IReadOnlyDictionary<string, string> generatedPropertyKinds)
@@ -116,7 +116,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool ShouldDeleteGeneratedAssetsNormalized(
             Material mat,
-            GeneratedTextureDataBase generatedData,
+            GeneratedTextureDataAssetBase generatedData,
             Texture2D generatedTexture,
             bool hasShaderDefinitions,
             IReadOnlyDictionary<string, string> generatedPropertyKinds)
@@ -140,7 +140,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static void DisconnectGeneratedTextureReference(
             Material mat,
-            GeneratedTextureDataBase generatedData,
+            GeneratedTextureDataAssetBase generatedData,
             Texture2D generatedTexture)
         {
             if (string.IsNullOrEmpty(generatedData.SourcePropertyName)) return;
@@ -167,7 +167,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool ContainsGeneratedAssets(Material mat)
         {
-            return Util.FetchSubAssets(mat).OfType<GeneratedTextureDataBase>().Any();
+            return Util.FetchSubAssets(mat).OfType<GeneratedTextureDataAssetBase>().Any();
         }
 
         private static Texture2D FindGeneratedTexture(IEnumerable<Object> subAssets, string textureName)
