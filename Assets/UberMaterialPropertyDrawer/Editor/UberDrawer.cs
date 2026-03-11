@@ -19,7 +19,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             MaterialEditor.BeginProperty(position, prop);
             var tmp = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = position.width * 0.5f;
-            var labelWithTooltip = Util.MakeLabelWithTooltip(label.text, prop);
+            var labelWithTooltip = MaterialPropertyUtility.MakeLabelWithTooltip(label.text, prop);
             // 無限ループしてエディタがクラッシュするのでDefaultShaderPropertyを使用する
             // editor.ShaderProperty(position, prop, ObjectNames.NicifyVariableName(prop.name));
             var rect = EditorGUI.PrefixLabel(position, labelWithTooltip);

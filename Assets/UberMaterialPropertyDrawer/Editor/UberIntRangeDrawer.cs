@@ -35,9 +35,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var tmp = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = position.width * 0.4f;
             
-            var labelWithTooltip = new GUIContent(label.text, Util.GetPropertyTooltip(prop));
+            var labelWithTooltip = new GUIContent(label.text, MaterialPropertyUtility.GetPropertyTooltip(prop));
             var rect = EditorGUI.PrefixLabel(position, labelWithTooltip); ;
-            var intValue = EditorGUI.IntSlider(rect, Util.GetInt(prop), min, max);
+            var intValue = EditorGUI.IntSlider(rect, MaterialPropertyUtility.GetInt(prop), min, max);
             
             EditorGUIUtility.labelWidth = tmp;
             
@@ -45,7 +45,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (EditorGUI.EndChangeCheck())
             {
                 editor.RegisterPropertyChangeUndo(prop.name);
-                Util.SetInt(prop, intValue);
+                MaterialPropertyUtility.SetInt(prop, intValue);
             }
             MaterialEditor.EndProperty();
         }

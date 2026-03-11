@@ -10,7 +10,6 @@
 - タスクが完了したら、`### 目次`からタスクを削除する。
 
 ### 目次
-- [03 utility クラスを責務単位に分割](#03-utility-クラスを責務単位に分割)
 - [04 レイアウト helper と inspector repaint API の命名統一](#04-レイアウト-helper-と-inspector-repaint-api-の命名統一)
 - [05 可視性判定と generated texture API の命名調整](#05-可視性判定と-generated-texture-api-の命名調整)
 - [06 数値・オプション関連の命名とスペルミスを修正](#06-数値オプション関連の命名とスペルミスを修正)
@@ -18,20 +17,6 @@
 
 
 
-## 03 utility クラスを責務単位に分割
-- 目的：
-    - `Util` の責務を分解し、MaterialProperty 操作と Material asset 操作を別クラスへ明示的に分ける。
-- 背景：
-    - `Util` は property 値変換、ラベル生成、sub-asset 探索、保存遅延まで抱えており、名前が責務を隠している。
-    - 中核クラスのリネーム後に着手することで、どの helper がどの層に属するかを整理しやすくなる。
-- 対応内容
-    - `Util` を廃止する。
-    - property 値変換とラベル生成を `MaterialPropertyUtility` に移す。
-    - sub-asset 探索と保存遅延を `MaterialAssetUtility` に移す。
-    - 呼び出し元を責務に応じて適切な utility へ差し替える。
-- 完了条件
-    - `Util` クラスが削除されている。
-    - 既存メソッドが `MaterialPropertyUtility` と `MaterialAssetUtility` に責務分割されている。
 
 ## 04 レイアウト helper と inspector repaint API の命名統一
 - 目的：

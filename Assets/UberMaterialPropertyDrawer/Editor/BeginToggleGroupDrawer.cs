@@ -72,7 +72,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             bgRect.height = style.fixedHeight;
             GUI.Box(bgRect, "", style); // background
             
-            var isFeatureEnabled = Util.GetAsBool(prop);
+            var isFeatureEnabled = MaterialPropertyUtility.GetAsBool(prop);
             var buttonWidth = 18;
             var buttonLeftMargin = 2;
             var toggleRect = position;
@@ -105,7 +105,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (EditorGUI.EndChangeCheck())
             {
                 editor.RegisterPropertyChangeUndo(prop.name);
-                Util.SetBool(prop, isFeatureEnabled);
+                MaterialPropertyUtility.SetBool(prop, isFeatureEnabled);
             }
             MaterialEditor.EndProperty();
             

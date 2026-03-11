@@ -44,7 +44,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 requiresSave = true;
             }
 
-            var subAssetTexture = Util.FetchSubAssetTexture(mat, textureAssetName);
+            var subAssetTexture = MaterialAssetUtility.FetchSubAssetTexture(mat, textureAssetName);
             var normalizationResult = _assetCoordinator.Normalize(mat, data, subAssetTexture, propertyName, textureAssetName);
             if (!normalizationResult.IsValid)
                 throw new InvalidOperationException(normalizationResult.Warning ?? "Generated texture normalization failed.");
@@ -100,14 +100,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             }
 
             if (requiresSave)
-                Util.DelaySaveAsset(mat);
+                MaterialAssetUtility.DelaySaveAsset(mat);
 
             return new GeneratedTextureBinding<TData>(mat, data, subAssetTexture);
         }
 
         private static TData FetchDataAsset(Material mat, string dataName)
         {
-            return Util.FetchSubAssets(mat).OfType<TData>().FirstOrDefault(a => a.name == dataName);
+            return MaterialAssetUtility.FetchSubAssets(mat).OfType<TData>().FirstOrDefault(a => a.name == dataName);
         }
 
         private static Texture2D CreateGeneratedTexture(string textureAssetName, GeneratedTextureDataAssetBase data)

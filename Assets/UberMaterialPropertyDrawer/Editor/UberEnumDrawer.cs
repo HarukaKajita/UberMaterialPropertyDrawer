@@ -118,7 +118,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             EditorGUI.showMixedValue = prop.hasMixedValue;
             
             // Get current index value
-            var value = Util.GetInt(prop);
+            var value = MaterialPropertyUtility.GetInt(prop);
             var selectedIndex = -1;
             for (var index = 0; index < _values.Length; index++)
             {
@@ -136,7 +136,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (EditorGUI.EndChangeCheck())
             {
                 editor.RegisterPropertyChangeUndo(prop.name);
-                Util.SetInt(prop, _values[selIndex]);    
+                MaterialPropertyUtility.SetInt(prop, _values[selIndex]);    
             }
             MaterialEditor.EndProperty();
         }

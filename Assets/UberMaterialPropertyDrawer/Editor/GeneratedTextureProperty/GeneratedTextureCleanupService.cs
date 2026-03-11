@@ -15,7 +15,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (mat == null) return;
 
-            var subAssets = Util.FetchSubAssets(mat).Where(asset => asset != null).ToList();
+            var subAssets = MaterialAssetUtility.FetchSubAssets(mat).Where(asset => asset != null).ToList();
             var generatedDataAssets = subAssets.OfType<GeneratedTextureDataAssetBase>().ToArray();
             if (generatedDataAssets.Length == 0) return;
 
@@ -72,7 +72,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (!materialChanged) return;
 
             EditorUtility.SetDirty(mat);
-            Util.DelaySaveAsset(mat);
+            MaterialAssetUtility.DelaySaveAsset(mat);
         }
 
         public static void CleanupAllAffectedMaterials(IEnumerable<Shader> shaders, CleanupMode mode)
@@ -167,7 +167,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool ContainsGeneratedAssets(Material mat)
         {
-            return Util.FetchSubAssets(mat).OfType<GeneratedTextureDataAssetBase>().Any();
+            return MaterialAssetUtility.FetchSubAssets(mat).OfType<GeneratedTextureDataAssetBase>().Any();
         }
 
         private static Texture2D FindGeneratedTexture(IEnumerable<Object> subAssets, string textureName)

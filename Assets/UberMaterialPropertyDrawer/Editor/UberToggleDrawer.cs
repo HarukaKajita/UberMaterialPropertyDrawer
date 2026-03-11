@@ -40,14 +40,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 EditorGUI.showMixedValue = prop.hasMixedValue;
 
                 
-                var toggleValue = Util.GetAsBool(prop);
+                var toggleValue = MaterialPropertyUtility.GetAsBool(prop);
                 toggleValue = EditorGUI.Toggle(position, labelText, toggleValue);    
             
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
                 {
                     editor.RegisterPropertyChangeUndo(propName);
-                    Util.SetBool(prop, toggleValue);
+                    MaterialPropertyUtility.SetBool(prop, toggleValue);
                 }
                 MaterialEditor.EndProperty();
             }
