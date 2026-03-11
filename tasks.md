@@ -10,7 +10,6 @@
 - タスクが完了したら、`### 目次`からタスクを削除する。
 
 ### 目次
-- [01 基盤クラスと generated texture 系の大規模リネーム](#01-基盤クラスと-generated-texture-系の大規模リネーム)
 - [02 GroupState 系の中核クラス名を整理](#02-groupstate-系の中核クラス名を整理)
 - [03 utility クラスを責務単位に分割](#03-utility-クラスを責務単位に分割)
 - [04 レイアウト helper と inspector repaint API の命名統一](#04-レイアウト-helper-と-inspector-repaint-api-の命名統一)
@@ -18,19 +17,6 @@
 - [06 数値・オプション関連の命名とスペルミスを修正](#06-数値オプション関連の命名とスペルミスを修正)
 - [07 公開ドキュメントとサンプルの命名を実装方針へ合わせる](#07-公開ドキュメントとサンプルの命名を実装方針へ合わせる)
 
-## 01 基盤クラスと generated texture 系の大規模リネーム
-- 目的：
-    - generated texture 周辺で意味が曖昧な基底クラス名を先に確定し、後続の型参照更新の基準を作る。
-- 背景：
-    - `GeneratedTextureDataBase` は `database` と誤読されやすく、以後の議論で確定した `GeneratedTextureDataAssetBase` に改める方針になっている。
-    - この型は `CurveData`、`GradientData`、`GeneratedTextureBinding<TData>`、`GeneratedTextureDrawerBase<TData, TOption>`、`MaterialSubAssetStore<TData>` など複数クラスの型制約や引数型として広く使われている。
-- 対応内容
-    - `GeneratedTextureDataBase` を `GeneratedTextureDataAssetBase` に改名する。
-    - 関連する継承、ジェネリック制約、メソッド引数、ローカル変数の型名参照を一括更新する。
-    - 型名変更後も generated texture 系の責務境界が維持されていることを確認する。
-- 完了条件
-    - `GeneratedTextureDataBase` という型名参照がコードベースから消えている。
-    - generated texture 系のコードが `GeneratedTextureDataAssetBase` を前提に一貫した名前になっている。
 
 ## 02 GroupState 系の中核クラス名を整理
 - 目的：
