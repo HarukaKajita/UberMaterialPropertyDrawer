@@ -10,7 +10,6 @@
 - タスクが完了したら、`### 目次`からタスクを削除する。
 
 ### 目次
-- [02 GroupState 系の中核クラス名を整理](#02-groupstate-系の中核クラス名を整理)
 - [03 utility クラスを責務単位に分割](#03-utility-クラスを責務単位に分割)
 - [04 レイアウト helper と inspector repaint API の命名統一](#04-レイアウト-helper-と-inspector-repaint-api-の命名統一)
 - [05 可視性判定と generated texture API の命名調整](#05-可視性判定と-generated-texture-api-の命名調整)
@@ -18,21 +17,6 @@
 - [07 公開ドキュメントとサンプルの命名を実装方針へ合わせる](#07-公開ドキュメントとサンプルの命名を実装方針へ合わせる)
 
 
-## 02 GroupState 系の中核クラス名を整理
-- 目的：
-    - グループ状態管理の中心概念を具体的な名前へ寄せ、状態保持と描画走査状態の違いをコード上で明確にする。
-- 背景：
-    - 方針として `GroupData` は `ShaderGroupStateData`、`UberGroupState` は `GroupStateManager`、`GroupRenderState` は `GroupTraversalState`、`GroupRenderStateCache` は `GroupTraversalStateCache` へ変更することが確定している。
-    - これらは相互参照が多く、途中で utility 分割や細部の改名に入るより先に核となる概念名を確定した方が安全。
-- 対応内容
-    - `GroupData` を `ShaderGroupStateData` に改名する。
-    - `GroupData.Shader` を `OwnerShader`、`GroupData.DepHashAtSet` を `DependencyHashAtCacheTime` に改名する。
-    - `UberGroupState` を `GroupStateManager` に改名する。
-    - `GroupRenderState` を `GroupTraversalState`、`GroupRenderStateCache` を `GroupTraversalStateCache` に改名する。
-    - 関連するファイル名、型名、参照名を一括更新する。
-- 完了条件
-    - GroupState 系の中心クラス名が確定方針どおりに更新されている。
-    - `GroupData`、`UberGroupState`、`GroupRenderState`、`GroupRenderStateCache` という旧名参照が残っていない。
 
 ## 03 utility クラスを責務単位に分割
 - 目的：

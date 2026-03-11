@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
 {
@@ -11,14 +11,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 		/// <param name="editor">マテリアルエディタ。</param>
 		/// <param name="groupName">グループ名。</param>
 		/// <returns>コンテンツを表示する場合は true 。それ以外は false 。</returns>
-		public static bool CanShowContent(GroupData data, MaterialEditor editor, string groupName)
+		public static bool CanShowContent(ShaderGroupStateData data, MaterialEditor editor, string groupName)
 		{
-			var currentPath = UberGroupState.GetCurrentPath(editor);
+			var currentPath = GroupStateManager.GetCurrentPath(editor);
 			var hasScope = !string.IsNullOrEmpty(currentPath);
 			var hasGroupName = !string.IsNullOrEmpty(groupName);
 
 			if (!hasScope && !hasGroupName) return true;
-			if ( hasScope && !hasGroupName) return UberGroupState.IsCurrentScopeVisible(data, editor);
+			if ( hasScope && !hasGroupName) return GroupStateManager.IsCurrentScopeVisible(data, editor);
 			if (!hasScope &&  hasGroupName)
 			{
 				UberDrawerLogger.LogWarning($"Group [{groupName}] is not scoped with BeginGroup/EndGroup. fix shader property attribute.");
@@ -31,7 +31,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 				UberDrawerLogger.LogError($"Group [{groupName}] is written in path [{currentPath}]. fix shader property attribute.");
 				return false;
 			}
-			return UberGroupState.IsCurrentScopeVisible(data, editor);
+			return GroupStateManager.IsCurrentScopeVisible(data, editor);
 		}
 
 		/// <summary>
@@ -40,9 +40,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 		/// <param name="data">グループデータ。</param>
 		/// <param name="editor">マテリアルエディタ。</param>
 		/// <returns>ヘッダーを表示する場合は true 。それ以外は false 。</returns>
-		public static bool CanShowHeader(GroupData data, MaterialEditor editor)
+		public static bool CanShowHeader(ShaderGroupStateData data, MaterialEditor editor)
 		{
-			return UberGroupState.IsParentScopeVisible(data, editor);
+			return GroupStateManager.IsParentScopeVisible(data, editor);
 		}
 	}
 }

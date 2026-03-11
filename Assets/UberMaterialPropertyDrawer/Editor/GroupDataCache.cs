@@ -9,37 +9,37 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// </summary>
     public static class GroupDataCache
     {
-        private static readonly Dictionary<Shader, GroupData> Cache = new();
+        private static readonly Dictionary<Shader, ShaderGroupStateData> Cache = new();
 
         /// <summary>
         /// Inspector描画タイミングでキャッシュが無ければ呼ぶ想定
         /// </summary>
-        private static void Set(Shader shader, GroupData groupData)
+        private static void Set(Shader shader, ShaderGroupStateData groupData)
         {
             if (!shader || groupData == null) return;
 
             var path = AssetDatabase.GetAssetPath(shader);
-            groupData.Shader = shader;
+            groupData.OwnerShader = shader;
 
             if (!string.IsNullOrEmpty(path))
-                groupData.DepHashAtSet = AssetDatabase.GetAssetDependencyHash(path); // 依存込みハッシュ
+                groupData.DependencyHashAtCacheTime = AssetDatabase.GetAssetDependencyHash(path); // 依存込みハッシュ
             else
-                groupData.DepHashAtSet = default; // 非アセット(シーン内生成等)
+                groupData.DependencyHashAtCacheTime = default; // 非アセット(シーン内生成等)
 
             Cache[shader] = groupData;
         }
 
-        public static GroupData GetOrCreate(Shader shader)
+        public static ShaderGroupStateData GetOrCreate(Shader shader)
         {
             if (!shader) return null;
             if (Cache.TryGetValue(shader, out var groupData)) return groupData;
 
-            groupData = new GroupData();
+            groupData = new ShaderGroupStateData();
             Set(shader, groupData);
             return groupData;
         }
 
-        public static bool TryGet(Shader shader, out GroupData groupData)
+        public static bool TryGet(Shader shader, out ShaderGroupStateData groupData)
         {
             if (!shader)
             {
@@ -80,7 +80,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 var data = Cache[shader];
 
                 // 非アセット（AssetDatabase管理外）
-                var materialAssetPath = AssetDatabase.GetAssetPath(data.Shader);
+                var materialAssetPath = AssetDatabase.GetAssetPath(data.OwnerShader);
                 if (string.IsNullOrEmpty(materialAssetPath))
                 {
                     if (invalidateNonAssetMaterials)
@@ -89,9 +89,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 }
 
                 var newHash = AssetDatabase.GetAssetDependencyHash(materialAssetPath);
-                if (newHash != data.DepHashAtSet)
+                if (newHash != data.DependencyHashAtCacheTime)
                     Cache.Remove(shader);
             }
         }
     }
 }
+
+

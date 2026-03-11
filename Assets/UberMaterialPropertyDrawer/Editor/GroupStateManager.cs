@@ -7,7 +7,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// <summary>
     /// グループ状態の直接的な操作を管理するクラス
     /// </summary>
-    public static class UberGroupState
+    public static class GroupStateManager
     {
         /// <summary>
         /// インスペクタの描画開始。
@@ -17,7 +17,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         internal static void BeginPass(MaterialEditor editor)
         {
             if (editor == null) return;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             renderState.PathStack.Clear();
             renderState.PushedProperties.Clear();
             renderState.PoppedProperties.Clear();
@@ -35,7 +35,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             UberDrawerLogger.Log("TryRecordPush : " + propNameKey);
             if (editor == null || string.IsNullOrEmpty(propNameKey)) return false;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             return renderState.PushedProperties.Add(propNameKey);
         }
 
@@ -51,7 +51,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             UberDrawerLogger.Log("TryRecordPop : " + propNameKey);
             if (editor == null || string.IsNullOrEmpty(propNameKey)) return false;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             return renderState.PoppedProperties.Add(propNameKey);
         }
 
@@ -61,7 +61,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// <param name="data">グループデータオブジェクト。nullなら、開状態として返却</param>
         /// <param name="groupPath">グループパス。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <returns>開閉状態</returns>
-        public static bool GetExpanded(GroupData data, string groupPath)
+        public static bool GetExpanded(ShaderGroupStateData data, string groupPath)
         {
             if (string.IsNullOrEmpty(groupPath)) return true;
             if (data == null) return true;
@@ -83,7 +83,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// <param name="data">グループデータオブジェクト。nullの場合、メソッドは実行せずに終了する。</param>
         /// <param name="groupPath">グループ名。nullまたは空文字列の場合、メソッドは実行せずに終了する。</param>
         /// <param name="state">開閉状態</param>
-        internal static void SetExpanded(GroupData data, string groupPath, bool state)
+        internal static void SetExpanded(ShaderGroupStateData data, string groupPath, bool state)
         {
             if (string.IsNullOrEmpty(groupPath) || data == null) return;
             data.ExpansionState.ExpandedByPath[groupPath] = state;
@@ -100,7 +100,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (string.IsNullOrEmpty(groupPath) || editor== null) return;
             UberDrawerLogger.Log("Push : " + groupPath);
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             renderState.PathStack.Push(groupPath);
         }
 
@@ -113,7 +113,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         internal static string PopPath(MaterialEditor editor)
         {
             if (editor == null) return string.Empty;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             if (editor == null || renderState.PathStack.Count == 0)
             {
                 UberDrawerLogger.LogWarning("Pop called on empty group stack.");
@@ -133,7 +133,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
                 return false;
             }
 
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             if (renderState.PathStack.Count == 0)
             {
                 groupPath = string.Empty;
@@ -144,7 +144,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             return true;
         }
 
-        internal static void ResetAll(GroupData data, MaterialEditor editor)
+        internal static void ResetAll(ShaderGroupStateData data, MaterialEditor editor)
         {
             if (data != null) 
             {
@@ -153,7 +153,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
             if (editor != null)
             {
-                var renderState = GroupRenderStateCache.GetOrCreate(editor);
+                var renderState = GroupTraversalStateCache.GetOrCreate(editor);
                 renderState.PathStack.Clear();
                 renderState.PushedProperties.Clear();
                 renderState.PoppedProperties.Clear();
@@ -172,14 +172,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         {
             if (editor == null) return string.Empty;
             
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             if (renderState.PathStack.Count <= 1) return string.Empty;
             return renderState.PathStack.ToArray()[1];
         }
         public static string GetCurrentPath(MaterialEditor editor)
         {
             if (editor == null) return string.Empty;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             if (renderState.PathStack.Count <= 0) return string.Empty;
             return renderState.PathStack.Peek();
         }
@@ -190,11 +190,11 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// <param name="data"></param>
         /// <param name="editor"></param>
         /// <returns></returns>
-        public static bool IsCurrentScopeVisible(GroupData data, MaterialEditor editor)
+        public static bool IsCurrentScopeVisible(ShaderGroupStateData data, MaterialEditor editor)
         {
             if (data == null) return false;
             if (editor == null) return false;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             // あってる？
             foreach (var groupPath in renderState.PathStack)
             {
@@ -210,12 +210,12 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         /// <param name="data"></param>
         /// <param name="editor"></param>
         /// <returns></returns>
-        public static bool IsParentScopeVisible(GroupData data, MaterialEditor editor)
+        public static bool IsParentScopeVisible(ShaderGroupStateData data, MaterialEditor editor)
         {
             // あってる？
             if (data == null) return false;
             if (editor == null) return false;
-            var renderState = GroupRenderStateCache.GetOrCreate(editor);
+            var renderState = GroupTraversalStateCache.GetOrCreate(editor);
             var groupPathArray = renderState.PathStack.Reverse().ToArray();
             for (var i = 0; i < groupPathArray.Length-1; i++)
             {
@@ -225,3 +225,4 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         }
     }
 }
+

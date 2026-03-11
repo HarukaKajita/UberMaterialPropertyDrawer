@@ -16,9 +16,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var data = GetGroupData(editor);
             var beginGroup = TryBeginGroup(editor, prop);
             if (beginGroup) BeginGroupScope(editor);
-            var parentPath         = UberGroupState.GetParentPath(editor);
-            var parentVisible = UberGroupState.IsParentScopeVisible(data, editor);
-            var groupPath = UberGroupState.GetCurrentPath(editor);
+            var parentPath         = GroupStateManager.GetParentPath(editor);
+            var parentVisible = GroupStateManager.IsParentScopeVisible(data, editor);
+            var groupPath = GroupStateManager.GetCurrentPath(editor);
             
             UberDrawerLogger.Log($"{GetType().Name}({GroupName}).GetPropertyHeight()");
             UberDrawerLogger.Log($"\t{nameof(beginGroup)}:{beginGroup}");
@@ -35,9 +35,9 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             var beginGroup = TryBeginGroup(editor, prop);
             if (beginGroup) BeginGroupScope(editor);
             
-            var parentPath         = UberGroupState.GetParentPath(editor);
-            var parentVisible = UberGroupState.IsParentScopeVisible(data, editor);
-            var groupPath = UberGroupState.GetCurrentPath(editor);
+            var parentPath         = GroupStateManager.GetParentPath(editor);
+            var parentVisible = GroupStateManager.IsParentScopeVisible(data, editor);
+            var groupPath = GroupStateManager.GetCurrentPath(editor);
             
             UberDrawerLogger.Log($"{GetType().Name}({GroupName}).OnGUI()");
             UberDrawerLogger.Log($"\t{nameof(beginGroup)}:{beginGroup}");
@@ -46,17 +46,17 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             UberDrawerLogger.Log($"\t{nameof(parentVisible)}:{parentVisible}");
             UberDrawerLogger.Log(GroupName + "のParent" + parentPath + "は" + (parentVisible ? "可視" : "不可視"));
             _memo = $" parent:{parentPath}";
-            var state = UberGroupState.GetExpanded(data, groupPath);
+            var state = GroupStateManager.GetExpanded(data, groupPath);
             if (GroupVisibility.CanShowHeader(data, editor))
             {
                 var newState = BeginPanel(position, data, state);
                 if (state != newState)
-                    UberGroupState.SetExpanded(data, groupPath, newState);
+                    GroupStateManager.SetExpanded(data, groupPath, newState);
                 EditorGUI.indentLevel++;
             }
         }
 
-        private bool BeginPanel(Rect position, GroupData data, bool expanded)
+        private bool BeginPanel(Rect position, ShaderGroupStateData data, bool expanded)
         {
             UberDrawerLogger.Log("BeginPanel " + GroupName);
             var style = new GUIStyle("ShurikenModuleTitle");
@@ -89,7 +89,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool TryBeginGroup(MaterialEditor editor, MaterialProperty prop)
         {
-            return UberGroupState.TryRecordPush(editor, prop?.name);
+            return GroupStateManager.TryRecordPush(editor, prop?.name);
         }
     }
 }
+

@@ -12,13 +12,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             UberDrawerLogger.Log($"GetPropertyHeight: {GetType().Name}");
-            UberGroupState.BeginPass(editor);
+            GroupStateManager.BeginPass(editor);
             return 0f;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
-            UberGroupState.BeginPass(editor);
+            GroupStateManager.BeginPass(editor);
         }
     }
 }
+

@@ -22,7 +22,7 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected string GroupName { get; }
 
-        protected GroupData GetGroupData(MaterialEditor editor)
+        protected ShaderGroupStateData GetGroupData(MaterialEditor editor)
         {
             var mat = GetTargetMaterial(editor);
             if (mat == null) return null;
@@ -51,23 +51,24 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         protected void BeginGroupScope(MaterialEditor editor)
         {
-            var parentPath = UberGroupState.GetCurrentPath(editor);
-            var groupPath = UberGroupState.BuildPath(parentPath, GroupName);
-            UberGroupState.PushPath(editor, groupPath);
+            var parentPath = GroupStateManager.GetCurrentPath(editor);
+            var groupPath = GroupStateManager.BuildPath(parentPath, GroupName);
+            GroupStateManager.PushPath(editor, groupPath);
         }
 
         protected void EndGroupScope(MaterialEditor editor)
         {
-            var currentPath = UberGroupState.GetCurrentPath(editor);
+            var currentPath = GroupStateManager.GetCurrentPath(editor);
             // check consistency within a declared group and current path
             var actualGroup = currentPath.Split("/").Last();
             var isValidPath = GroupName == actualGroup;
             if (!isValidPath) 
                 UberDrawerLogger.LogWarning($"declared [EndGroup({GroupName})]. but actual group is '{actualGroup}'. Fix shader property attribute '[EndGroup({GroupName})]' to '[EndGroup({actualGroup})]'");
             
-            var poppedPath = UberGroupState.PopPath(editor);
+            var poppedPath = GroupStateManager.PopPath(editor);
             if (poppedPath != currentPath)
                 UberDrawerLogger.LogWarning($"Expected path '{currentPath}', but popped '{poppedPath}'");
         }
     }
 }
+

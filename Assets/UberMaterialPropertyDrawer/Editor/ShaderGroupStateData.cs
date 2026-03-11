@@ -6,13 +6,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
     /// Shaderに対応して保持されるデータ。
     /// プロパティ描画時のグループの開閉状態。
     /// </summary>
-    public class GroupData
+    public class ShaderGroupStateData
     {
         // キャッシュの所有者と無効か判定用のハッシュ値
-        public Shader Shader; 
-        public Hash128 DepHashAtSet;// キャッシュ生成時の依存ハッシュ
+        public Shader OwnerShader; 
+        public Hash128 DependencyHashAtCacheTime;// キャッシュ生成時の依存ハッシュ
         
         // 開閉状態
         internal readonly GroupExpansionState ExpansionState = new();
     }
 }
+

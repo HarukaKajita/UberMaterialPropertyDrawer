@@ -15,8 +15,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (endGroup) EndGroupScope(editor);
          
             var data = GetGroupData(editor);
-            var parentPath = UberGroupState.GetCurrentPath(editor);
-            var parentVisible = UberGroupState.IsCurrentScopeVisible(data, editor);
+            var parentPath = GroupStateManager.GetCurrentPath(editor);
+            var parentVisible = GroupStateManager.IsCurrentScopeVisible(data, editor);
             
             UberDrawerLogger.Log($"{GetType().Name}({GroupName}).GetPropertyHeight()");
             UberDrawerLogger.Log($"\t{nameof(endGroup)}:{endGroup}");
@@ -32,8 +32,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
             if (endGroup) EndGroupScope(editor);
             
             var data = GetGroupData(editor);
-            var parentPath = UberGroupState.GetCurrentPath(editor);
-            var parentVisible = UberGroupState.IsCurrentScopeVisible(data, editor);
+            var parentPath = GroupStateManager.GetCurrentPath(editor);
+            var parentVisible = GroupStateManager.IsCurrentScopeVisible(data, editor);
             
             UberDrawerLogger.Log($"{GetType().Name}({GroupName}).OnGUI()");
             UberDrawerLogger.Log($"\t{nameof(endGroup)}:{endGroup}");
@@ -47,7 +47,8 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 
         private static bool TryEndGroup(MaterialEditor editor, MaterialProperty prop)
         {
-            return UberGroupState.TryRecordPop(editor, prop?.name);
+            return GroupStateManager.TryRecordPop(editor, prop?.name);
         }
     }
 }
+

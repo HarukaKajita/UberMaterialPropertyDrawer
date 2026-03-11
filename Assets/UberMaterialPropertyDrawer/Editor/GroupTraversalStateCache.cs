@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 
 namespace ExtEditor.UberMaterialPropertyDrawer
@@ -6,14 +6,14 @@ namespace ExtEditor.UberMaterialPropertyDrawer
 	/// <summary>
 	/// MaterialEditor毎にグループの開閉状態をキャッシュするクラス。
 	/// </summary>
-	public static class GroupRenderStateCache
+	public static class GroupTraversalStateCache
 	{
-		private static readonly ConditionalWeakTable<MaterialEditor, GroupRenderState> Cache = new();
+		private static readonly ConditionalWeakTable<MaterialEditor, GroupTraversalState> Cache = new();
 
-		public static GroupRenderState GetOrCreate(MaterialEditor editor)
+		public static GroupTraversalState GetOrCreate(MaterialEditor editor)
 		{
 			if (Cache.TryGetValue(editor, out var renderState)) return renderState;
-			renderState = new GroupRenderState();
+			renderState = new GroupTraversalState();
 			Cache.Add(editor, renderState);
 			return renderState;
 		}

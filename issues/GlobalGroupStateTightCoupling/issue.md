@@ -1,10 +1,10 @@
 ## 概要
 重要度：65
 
-UberGroupState が static なグローバル状態として実装され、各 Drawer がそれに直接依存しています。これはDIPに反し、状態管理の差し替えやテスト、複数マテリアル/インスペクターでの分離が困難になります。
+GroupStateManager が static なグローバル状態として実装され、各 Drawer がそれに直接依存しています。これはDIPに反し、状態管理の差し替えやテスト、複数マテリアル/インスペクターでの分離が困難になります。
 
 ## 該当ファイル
-- Assets/UberMaterialPropertyDrawer/Editor/UberGroupState.cs
+- Assets/UberMaterialPropertyDrawer/Editor/GroupStateManager.cs
 - Assets/UberMaterialPropertyDrawer/Editor/UberDrawerBase.cs
 - Assets/UberMaterialPropertyDrawer/Editor/BeginGroupDrawer.cs
 - Assets/UberMaterialPropertyDrawer/Editor/BeginToggleGroupDrawer.cs
@@ -27,3 +27,4 @@ GroupExpanded と GroupNest が static で保持され、全 Drawer がそれを
 
 ## 備考
 - UnityEditor では MaterialEditor.userData 等に状態を持たせる設計も可能です。
+
