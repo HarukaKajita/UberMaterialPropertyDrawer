@@ -3,14 +3,26 @@ Shader "Test/UberProps"
     Properties
     {
     	[InitGroupDecorator]
-    	[BeginGroup     (Sample)]					 _BeginGroup  ("BeginAllDummy", int) = 0
-    	[Vector         (Sample,2)] 				 _Vec2Test	  ("Vec2Test", Vector) = (0,0,0,0)
-    	[Vector         (Sample,3)] 				 _Vec3Test	  ("Vec3Test", Vector) = (0,0,0,0)
-    	[Vector         (Sample,4)] 				 _Vec4Test	  ("Vec4Test", Vector) = (0,0,0,0)
-    	[UberEnum       (Sample, A,0,B,1,C,2)]		 _EnumTest	  ("EnumTest",    int) = 0
-    	[UberEnum       (Sample, CullMode)]		 _DefinedEnum ("DefinedEnum", int) = 0
-    	[CurveTexture   (Sample, res256, ch4, bit8)]_Curve		  ("Curve",    2D) = "black" {}
-    	[GradientTexture(Sample, res256, ch4, bit8)]_Gradient	  ("Gradient", 2D) = "black" {}
+    	[BeginGroup     (Sample)]				_BeginGroup  ("_BeginGroup", integer) = 0
+    	[Vector         (Sample,2)] 			_Vec2Test	 ("_Vec2Test", Vector) = (0,0,0,0)
+    	[Vector         (Sample,3)] 			_Vec3Test	 ("_Vec3Test", Vector) = (0,0,0,0)
+    	[Vector         (Sample,4)] 			_Vec4Test	 ("_Vec4Test", Vector) = (0,0,0,0)
+    	[UberEnum       (Sample, A,0,B,1,C,2)]	_EnumTest	 ("_EnumTest",    integer) = 0
+    	[UberEnum       (Sample, CullMode)]		_DefinedEnum ("_DefinedEnum", integer) = 0
+    	[UberToggle     (Sample)]				_Toggle		 ("_Toggle", int) = 0
+    	[UberToggle     (Sample,2)]				_Toggle2	 ("_Toggle2",Vector) = (0,0,0,0)
+    	[UberToggle     (Sample,3)]				_Toggle3	 ("_Toggle3",Vector) = (0,0,0,0)
+    	[UberToggle     (Sample,4)]				_Toggle4	 ("_Toggle4",Vector) = (0,0,0,0)
+    	[UberIntRange   (Sample,0,10)]			_IntRange	 ("_IntRange",integer) = 5
+    	[CurveTexture   (Sample, res256, ch4, bit8)]_Curve	 ("_Curve",    2D) = "black" {}
+    	[GradientTexture(Sample, res256, ch4, bit8)]_Gradient("_Gradient", 2D) = "black" {}
+    	
+    	[Uber(Sample)]      _Float    ("_Float", Float) = 1
+    	[Uber(Sample)]      _Range    ("_Range", Range(0,1)) = 0.5
+    	[Uber(Sample)]		_Color    ("_Color", Color) = (1,1,1,1)
+    	[Uber(Sample)][HDR] _HDRColor ("_HDRColor", Color) = (1,1,1,1)
+    	[Uber(Sample)]      _Vector   ("_Vector", Vector) = (1,1,1,1)
+    	
     	
     	[BeginToggleGroup(A)]	_UseA ("_UseA", int) = 1
         [BeginToggleGroup(B)]   _UseB ("_UseB", int) = 1
